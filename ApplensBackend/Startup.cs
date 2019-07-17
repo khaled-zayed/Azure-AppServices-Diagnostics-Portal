@@ -51,18 +51,19 @@ namespace AppLensV3
             services.AddSingleton<IDiagnosticClientService, DiagnosticRoleClient>();
             services.AddSingleton<IGithubClientService, GithubClientService>();
             services.AddSingleton<IKustoQueryService, KustoQueryService>();
-            services.AddSingleton<IKustoTokenRefreshService, KustoTokenRefreshService>();
             services.AddSingleton<IOutageCommunicationService, OutageCommunicationService>();
             services.AddSingleton<ILocalDevelopmentClientService, LocalDevelopmentClientService>();
             services.AddSingleton<IEmailNotificationService, EmailNotificationService>();
             services.AddSingleton<IGraphClientService, GraphClientService>();
-            services.AddSingleton<IGraphTokenService, GraphTokenService>();
             services.AddSingleton<ISupportTopicService, SupportTopicService>();
             services.AddSingleton<ISelfHelpContentService, SelfHelpContentService>();
             services.AddSingleton<IFreshChatClientService, FreshChatClientService>();
 
             services.AddMemoryCache();
             services.AddMvc();
+
+            GraphTokenService.Instance.Initialize(Configuration);
+            KustoTokenRefreshService.Instance.Initialize(Configuration);
 
             if (Configuration.GetValue<bool>("DatacenterFederationEnabled", false))
             {
