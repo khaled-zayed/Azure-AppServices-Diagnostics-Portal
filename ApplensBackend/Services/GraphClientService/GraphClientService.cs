@@ -28,9 +28,7 @@ namespace AppLensV3.Services
         private IMemoryCache _cache;
 
         private List<string> TestSecurityGroup;
-
-        private IGraphTokenService _graphTokenService;
-
+        
         private readonly Lazy<HttpClient> _client = new Lazy<HttpClient>(() =>
         {
             var client = new HttpClient();
@@ -47,10 +45,9 @@ namespace AppLensV3.Services
             }
         }
 
-        public GraphClientService(IMemoryCache cache, IGraphTokenService graphTokenService, IConfiguration configuration)
+        public GraphClientService(IMemoryCache cache, IConfiguration configuration)
         {
             _cache = cache;
-            _graphTokenService = graphTokenService;
             TestSecurityGroup = configuration["TestSecurityGroup"]?.Split(",").ToList();
             if (TestSecurityGroup == null){
                 TestSecurityGroup = new List<string>();
@@ -81,7 +78,7 @@ namespace AppLensV3.Services
                 throw new ArgumentException("userId");
             }
 
-            string authorizationToken = await _graphTokenService.GetAuthorizationTokenAsync();
+            string authorizationToken = await GraphTokenService.Instance.GetAuthorizationTokenAsync();
 
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, string.Format(GraphConstants.GraphUserApiEndpointFormat, userId));
             request.Headers.Add("Authorization", authorizationToken);
@@ -119,7 +116,7 @@ namespace AppLensV3.Services
 
             var tasks = new List<Task>();
 
-            string authorizationToken = await _graphTokenService.GetAuthorizationTokenAsync();
+            string authorizationToken = await GraphTokenService.Instance.GetAuthorizationTokenAsync();
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, string.Format(GraphConstants.GraphUserImageApiEndpointFormat, userId));
             request.Headers.Add("Authorization", authorizationToken);
 

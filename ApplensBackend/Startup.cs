@@ -1,21 +1,19 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using AppLensV3.Services;
+using AppLensV3.Services.DiagnosticClientService;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
-using AppLensV3.Services;
-using System;
-using Microsoft.AspNetCore.Mvc.Filters;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Identity;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.IdentityModel.Tokens.Saml;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.WsFederation;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.Tokens.Saml2;
 
 namespace AppLensV3
@@ -48,7 +46,7 @@ namespace AppLensV3
             services.AddSingleton(Configuration);
 
             services.AddSingleton<IObserverClientService, SupportObserverClientService>();
-            services.AddSingleton<IDiagnosticClientService, DiagnosticRoleClient>();
+            services.AddSingleton<IDiagnosticClientService, DiagnosticClient>();
             services.AddSingleton<IGithubClientService, GithubClientService>();
             services.AddSingleton<IKustoQueryService, KustoQueryService>();
             services.AddSingleton<IOutageCommunicationService, OutageCommunicationService>();
@@ -64,6 +62,12 @@ namespace AppLensV3
 
             GraphTokenService.Instance.Initialize(Configuration);
             KustoTokenRefreshService.Instance.Initialize(Configuration);
+
+            // If we are using runtime host directly
+            if (Configuration.GetValue<bool>("DiagnosticsService:UseRuntimeHost"))
+            {
+                DiagnosticClientToken.Instance.Initialize(Configuration);
+            }
 
             if (Configuration.GetValue<bool>("DatacenterFederationEnabled", false))
             {

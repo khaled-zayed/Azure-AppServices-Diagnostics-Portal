@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using AppLensV3.Helpers;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace AppLensV3.Services.TokenService
 {

@@ -1,6 +1,4 @@
-﻿using AppLensV3.Services;
-using Microsoft.Extensions.Configuration;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -10,10 +8,11 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
-namespace AppLensV3
+namespace AppLensV3.Services.DiagnosticClientService
 {
-    public class DiagnosticRoleClient : IDiagnosticClientService
+    public class DiagnosticClient : IDiagnosticClientService
     {
         private IConfiguration _configuration;
         private IEmailNotificationService _emailService;
@@ -25,15 +24,17 @@ namespace AppLensV3
         {
             get
             {
-                return _configuration["DiagnosticRole:authCertThumbprint"];
+                return _configuration["DiagnosticsService:authCertThumbprint"];
             }
         }
 
-        public string DiagnosticRoleEndpoint
+        public string DiagnosticsServiceEndpoint
         {
             get
             {
-                return _configuration["DiagnosticRole:endpoint"];
+                return IsRunTimeHostEnabled
+                    ? _configuration["DiagnosticsService:RuntimeHostEndpoint"]
+                    : _configuration["DiagnosticsService:endpoint"];
             }
         }
 
@@ -41,7 +42,7 @@ namespace AppLensV3
         {
             get
             {
-                if (bool.TryParse(_configuration["DiagnosticRole:isLocalDevelopment"], out bool retVal))
+                if (bool.TryParse(_configuration["DiagnosticsService:isLocalDevelopment"], out bool retVal))
                 {
                     return retVal;
                 }
@@ -50,7 +51,15 @@ namespace AppLensV3
             }
         }
 
-        public DiagnosticRoleClient(IConfiguration configuration)
+        public bool IsRunTimeHostEnabled
+        {
+            get
+            {
+                return _configuration.GetValue<bool>("DiagnosticsService:UseRuntimeHost");
+            }
+        }
+
+        public DiagnosticClient(IConfiguration configuration)
         {
             _configuration = configuration;
             _client = InitializeClient();
@@ -60,7 +69,9 @@ namespace AppLensV3
         private HttpClient InitializeClient()
         {
             var handler = new HttpClientHandler();
-            if (!this.IsLocalDevelopment)
+
+            // For production and runtimehost not enabled, use Cert Auth to talk to DiagnosticsService.
+            if (!this.IsLocalDevelopment && !_configuration.GetValue<bool>("DiagnosticsService:UseRuntimeHost"))
             {
                 X509Certificate2 certificate = GetMyX509Certificate();
                 handler.ClientCertificates.Add(certificate);
@@ -70,11 +81,11 @@ namespace AppLensV3
                 {
                     return true;
                 };
-            }
+            } 
 
             var client = new HttpClient(handler)
             {
-                BaseAddress = new Uri(DiagnosticRoleEndpoint),
+                BaseAddress = new Uri(DiagnosticsServiceEndpoint),
                 Timeout = TimeSpan.FromSeconds(5 * 60),
                 MaxResponseContentBufferSize = int.MaxValue
             };
@@ -97,7 +108,11 @@ namespace AppLensV3
                         var requestMessage = new HttpRequestMessage(method == "POST" ? HttpMethod.Post : HttpMethod.Get, path);
                         requestMessage.Headers.Add("x-ms-internal-client", internalClient.ToString());
                         requestMessage.Headers.Add("x-ms-internal-view", internalView.ToString());
-
+                        if (IsRunTimeHostEnabled)
+                        {
+                            var authToken = await DiagnosticClientToken.Instance.GetAuthorizationTokenAsync();
+                            requestMessage.Headers.Add("Authorization", authToken);
+                        }
                         if (method.ToUpper() == "POST")
                         {
                             requestMessage.Content = new StringContent(body ?? string.Empty, Encoding.UTF8, "application/json");
@@ -118,6 +133,11 @@ namespace AppLensV3
                         requestMessage.Headers.Add("x-ms-internal-view", internalView.ToString());
                         requestMessage.Headers.Add("x-ms-verb", method);
                         requestMessage.Content = new StringContent(body ?? string.Empty, Encoding.UTF8, "application/json");
+                        if (IsRunTimeHostEnabled)
+                        {
+                            var authToken = await DiagnosticClientToken.Instance.GetAuthorizationTokenAsync();
+                            requestMessage.Headers.Add("Authorization", authToken);
+                        }
 
                         if (additionalHeaders != null)
                         {
@@ -143,6 +163,12 @@ namespace AppLensV3
                     if (additionalHeaders != null)
                     {
                         AddAdditionalHeaders(additionalHeaders, ref requestMessage);
+                    }
+
+                    if (IsRunTimeHostEnabled)
+                    {
+                        var authToken = await DiagnosticClientToken.Instance.GetAuthorizationTokenAsync();
+                        requestMessage.Headers.Add("Authorization", authToken);
                     }
 
                     requestMessage.Headers.Add("x-ms-internal-client", internalClient.ToString());

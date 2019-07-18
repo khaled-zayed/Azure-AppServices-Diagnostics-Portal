@@ -19,7 +19,6 @@ namespace AppLensV3.Services
 
     public class KustoQueryService : IKustoQueryService
     {
-        private IKustoTokenRefreshService _kustoTokenRefreshService;
 
         private readonly Lazy<HttpClient> _client = new Lazy<HttpClient>(() =>
         {
@@ -39,10 +38,6 @@ namespace AppLensV3.Services
             }
         }
 
-        public KustoQueryService(IKustoTokenRefreshService kustoTokenRefreshService)
-        {
-            _kustoTokenRefreshService = kustoTokenRefreshService;
-        }
         public Task<DataTable> ExecuteClusterQuery(string query, string cluster = "wawseus", string database = "wawsprod", string requestId = null)
         {
             return ExecuteQueryAsync(cluster, database, query, requestId);
@@ -65,7 +60,7 @@ namespace AppLensV3.Services
                 throw new ArgumentException("query");
             }
 
-            string authorizationToken = await _kustoTokenRefreshService.GetAuthorizationTokenAsync();
+            string authorizationToken = await KustoTokenRefreshService.Instance.GetAuthorizationTokenAsync();
 
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, string.Format(KustoConstants.KustoApiEndpointFormat, cluster));
             request.Headers.Add("Authorization", authorizationToken);

@@ -1,8 +1,8 @@
-﻿using AppLensV3.Helpers;
+﻿using System;
+using AppLensV3.Helpers;
+using AppLensV3.Services.TokenService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using AppLensV3.Services.TokenService;
-using System;
 
 namespace AppLensV3.Services
 {
@@ -14,6 +14,9 @@ namespace AppLensV3.Services
         protected override ClientCredential ClientCredential { get; set; }
         protected override string Resource { get; set; }
 
+        /// <summary>
+        /// Initializes Kusto Token Service with config.
+        /// </summary>
         public void Initialize(IConfiguration configuration)
         {
             AuthenticationContext = new AuthenticationContext(KustoConstants.MicrosoftTenantAuthorityUrl);
