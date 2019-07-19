@@ -18,9 +18,9 @@ namespace AppLensV3.Services.DiagnosticClientService
 
         public void Initialize(IConfiguration configuration)
         {
-            AuthenticationContext = new AuthenticationContext(configuration["DiagnosticsService:AADAuthority"]);
-            ClientCredential = new ClientCredential(configuration["DiagnosticsService:ClientId"], configuration["DiagnosticsService:AppKey"]);
-            Resource = configuration["DiagnosticsService:AADResource"];
+            AuthenticationContext = new AuthenticationContext(configuration["DiagnosticService:AADAuthority"]);
+            ClientCredential = new ClientCredential(configuration["DiagnosticService:ClientId"], configuration["DiagnosticService:AppKey"]);
+            Resource = configuration["DiagnosticService:AADResource"];
             StartTokenRefresh();
         }
     }
