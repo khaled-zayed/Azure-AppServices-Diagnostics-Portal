@@ -24,7 +24,7 @@ namespace AppLensV3.Services.DiagnosticClientService
         {
             get
             {
-                return _configuration["DiagnosticService:authCertThumbprint"];
+                return _configuration["DiagnosticRole:authCertThumbprint"];
             }
         }
 
@@ -33,8 +33,8 @@ namespace AppLensV3.Services.DiagnosticClientService
             get
             {
                 return IsRunTimeHostEnabled
-                    ? _configuration["DiagnosticService:RuntimeHostEndpoint"]
-                    : _configuration["DiagnosticService:endpoint"];
+                    ? _configuration["DiagnosticRole:AppServiceEndpoint"]
+                    : _configuration["DiagnosticRole:endpoint"];
             }
         }
 
@@ -42,7 +42,7 @@ namespace AppLensV3.Services.DiagnosticClientService
         {
             get
             {
-                if (bool.TryParse(_configuration["DiagnosticService:isLocalDevelopment"], out bool retVal))
+                if (bool.TryParse(_configuration["DiagnosticRole:isLocalDevelopment"], out bool retVal))
                 {
                     return retVal;
                 }
@@ -55,7 +55,7 @@ namespace AppLensV3.Services.DiagnosticClientService
         {
             get
             {
-                return _configuration.GetValue<bool>("DiagnosticService:UseRuntimeHost");
+                return _configuration.GetValue<bool>("DiagnosticRole:UseAppService");
             }
         }
 
@@ -71,7 +71,7 @@ namespace AppLensV3.Services.DiagnosticClientService
             var handler = new HttpClientHandler();
 
             // For production and runtimehost not enabled, use Cert Auth to talk to DiagnosticService.
-            if (!this.IsLocalDevelopment && !_configuration.GetValue<bool>("DiagnosticService:UseRuntimeHost"))
+            if (!this.IsLocalDevelopment && !IsRunTimeHostEnabled)
             {
                 X509Certificate2 certificate = GetMyX509Certificate();
                 handler.ClientCertificates.Add(certificate);
