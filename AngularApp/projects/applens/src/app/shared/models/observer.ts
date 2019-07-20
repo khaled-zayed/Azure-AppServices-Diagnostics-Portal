@@ -12,6 +12,8 @@ namespace Observer {
         WebSpace: string;
         ResourceGroupName: string;
         SlotName: string;
+        GeomasterName: string;
+        GeomasterServiceAddress: string;
     }
   
     export interface ObserverAseResponse {

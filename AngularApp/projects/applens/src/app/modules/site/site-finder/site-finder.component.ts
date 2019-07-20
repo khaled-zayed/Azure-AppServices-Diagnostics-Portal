@@ -26,7 +26,7 @@ export class SiteFinderComponent implements OnInit {
     this.site = this._route.snapshot.params['site'];
 
     this._observerService.getSite(this.site).subscribe(observerSiteResponse => {
-      if ((observerSiteResponse.details instanceof String) && (observerSiteResponse.details.toString() == "Unable to fetch data from Observer API : GetAdminSite")){
+      if (observerSiteResponse.details.toString() == "Unable to fetch data from Observer API : GetAdminSite"){
         this.error = `There was an error trying to find app ${this.site}`;
         this.loading = false;  
       }
@@ -46,6 +46,7 @@ export class SiteFinderComponent implements OnInit {
   }
 
   navigateToSite(matchingSite: Observer.ObserverSiteInfo) {
+    this._observerService.setSiteGeomaster(matchingSite);
     let resourceArray: string[] = [
       'subscriptions', matchingSite.Subscription,
       'resourceGroups', matchingSite.ResourceGroupName,
