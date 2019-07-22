@@ -207,7 +207,10 @@ namespace AppLensV3
         {
             foreach (var header in additionalHeaders)
             {
-                request.Headers.Add(header.Key, header.Value);
+                if(!request.Headers.Contains(header.Key))
+                {
+                    request.Headers.Add(header.Key, header.Value);
+                }
             }
         }
     }
