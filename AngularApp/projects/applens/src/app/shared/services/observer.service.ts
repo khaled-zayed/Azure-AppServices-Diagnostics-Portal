@@ -6,9 +6,6 @@ import { isArray } from 'util';
 
 @Injectable()
 export class ObserverService {
-  public setSiteGeomaster(site: Observer.ObserverSiteInfo){
-    this._diagnosticApiService.GeomasterServiceAddress = site.GeomasterServiceAddress;
-  }
 
   constructor(private _diagnosticApiService: DiagnosticApiService) { }
 

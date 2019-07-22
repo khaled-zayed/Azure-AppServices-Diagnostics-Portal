@@ -46,7 +46,6 @@ export class SiteFinderComponent implements OnInit {
   }
 
   navigateToSite(matchingSite: Observer.ObserverSiteInfo) {
-    this._observerService.setSiteGeomaster(matchingSite);
     let resourceArray: string[] = [
       'subscriptions', matchingSite.Subscription,
       'resourceGroups', matchingSite.ResourceGroupName,
