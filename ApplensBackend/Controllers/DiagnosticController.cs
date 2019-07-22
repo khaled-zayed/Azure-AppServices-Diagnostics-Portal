@@ -148,7 +148,7 @@ namespace AppLensV3.Controllers
             // Add all remaining headers with x-ms- or diag- prefix to request
             var allRequestHeaders = Request.Headers.ToDictionary(header => header.Key, header => header.Value, StringComparer.OrdinalIgnoreCase);
             foreach(var item in allRequestHeaders){
-                if (item.Key.StartsWith("x-ms-") || item.Key.StartsWith("diag-")){
+                if ((item.Key.StartsWith("x-ms-") || item.Key.StartsWith("diag-")) && !headers.Contains(item.Key)){
                     headers.Add(item.Key, item.Value.ToString());
                 }
             }
