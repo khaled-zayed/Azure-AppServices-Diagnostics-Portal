@@ -89,7 +89,7 @@ export class ChangesetsViewComponent extends DataRenderBaseComponent implements 
                 // Convert UTC timestamp to user readable date
                 this.scanDate = rows[0][6] != '' ? 'Changes were last scanned on ' + moment(rows[0][6]).format("ddd, MMM D YYYY, h:mm:ss a") : this.noScanMsg + ' Please enable Change Analysis using Change Analysis Settings.';
             } else {
-                this.scanDate = '';
+                this.scanDate = rows[0][6] != '' ? 'Changes were last scanned on ' + moment(rows[0][6]).format("ddd, MMM D YYYY, h:mm:ss a") : 'No recent scans were performed on this resource.';
             }
 
             if(this.isPublic) {
@@ -269,7 +269,15 @@ export class ChangesetsViewComponent extends DataRenderBaseComponent implements 
         this.scanState = "Submitting";
         this.scanStatusMessage = "Submitting scan request...";
         this.allowScanAction = false;
-        let queryParams = `&scanAction=submitscan`;
+        let queryParams = `&fId=103&btnId=9&inpId=5&val=submitscan`;
+        if(!this.changeAnalysisService.getAppService()) {
+            let dependentResourceId = this.changeAnalysisService.getResouceUri();
+            let sub = ChangeAnalysisUtilities.getSubscription(dependentResourceId);
+            let resourceGroups = ChangeAnalysisUtilities.getResourceGroup(dependentResourceId);
+            let provider = ChangeAnalysisUtilities.getResourceType(dependentResourceId);
+            let resourceName = ChangeAnalysisUtilities.getResourceName(dependentResourceId, provider);
+            queryParams += `&inpId=1&val=${encodeURIComponent(sub)}&inpId=2&val=${encodeURIComponent(resourceGroups)}&inpId=3&val=${encodeURIComponent(provider)}&inpId=4&val=${encodeURIComponent(resourceName)}`;
+        }
         this.diagnosticService.getDetector(this.detector,  this.detectorControlService.startTimeString, this.detectorControlService.endTimeString,
             this.detectorControlService.shouldRefresh, this.detectorControlService.isInternalView, queryParams).subscribe((response: DetectorResponse) => {
                 let dataset = response.dataset;
@@ -298,71 +306,73 @@ export class ChangesetsViewComponent extends DataRenderBaseComponent implements 
     }
 
     private checkInitialScanState() {
-        if(this.changeAnalysisService.getAppService()) {
-            this.settingsService.getScanEnabled().subscribe(isEnabled => {
-                if (isEnabled) {
-                    if (this.scanDate.startsWith(this.noScanMsg)) {
-                        this.scanDate = this.noScanMsg;
-                    }
-
-                    this.scanStatusMessage = "Checking recent scan status...";
-                    this.scanState = "Polling";
-                    this.allowScanAction = false;
-                    let queryParams = `&scanAction=checkscan`;
-                    this.diagnosticService.getDetector(this.detector, this.detectorControlService.startTimeString, this.detectorControlService.endTimeString,
-                        this.detectorControlService.shouldRefresh, this.detectorControlService.isInternalView, queryParams).subscribe((response: DetectorResponse) => {
-                            let dataset = response.dataset;
-                            let table = dataset[0].table;
-                            let rows = table.rows;
-                            let submissionState = rows[0][1];
-                            this.scanState = submissionState;
-                            if (submissionState == "Completed") {
-                                this.setScanState(submissionState);
-                                let completedTime = rows[0][3];
-                                let currentMoment = moment();
-                                let completedMoment = moment(completedTime);
-                                let diff = currentMoment.diff(completedMoment, 'seconds');
-                                // If scan has been completed more than a minute ago, display default message
-                                if (diff >= 60) {
-                                    this.setDefaultScanStatus();
-                                } else {
-                                    this.scanStatusMessage = "Scanning is complete. Click the below button to view the latest changes now.";
-                                    this.allowScanAction = true;
-                                    this.showViewChanges = true;
-                                }
-                            } else if (submissionState == "No active requests") {
-                                this.setScanState("");
-                                this.setDefaultScanStatus();
-                            } else {
-                                this.subscription = interval(5000).subscribe(res => {
-                                    this.pollForScanStatus();
-                                });
-                            }
-                        }, (error: any) => {
-                            // Stop timer in case of any error
-                            if (this.subscription) {
-                                this.subscription.unsubscribe();
-                            }
-                            this.scanState = "";
-                            this.setScanState("");
-                        });
-                } else {
-                    this.scanStatusMessage = '';
-                    this.allowScanAction = false;
-                }
-            });
-        } else {
-            this.scanStatusMessage = '';
-            this.allowScanAction = false;
+        if (this.scanDate.startsWith(this.noScanMsg)) {
+            this.scanDate = this.noScanMsg;
         }
-
+        this.scanStatusMessage = "Checking recent scan status...";
+        this.scanState = "Polling";
+        this.allowScanAction = false;
+        let queryParams = `&fId=103&btnId=9&inpId=5&val=checkscan`;
+        if(!this.changeAnalysisService.getAppService()) {
+            let dependentResourceId = this.changeAnalysisService.getResouceUri();
+            let sub = ChangeAnalysisUtilities.getSubscription(dependentResourceId);
+            let resourceGroups = ChangeAnalysisUtilities.getResourceGroup(dependentResourceId);
+            let provider = ChangeAnalysisUtilities.getResourceType(dependentResourceId);
+            let resourceName = ChangeAnalysisUtilities.getResourceName(dependentResourceId, provider);
+            queryParams += `&inpId=1&val=${encodeURIComponent(sub)}&inpId=2&val=${encodeURIComponent(resourceGroups)}&inpId=3&val=${encodeURIComponent(provider)}&inpId=4&val=${encodeURIComponent(resourceName)}`;
+        }
+        this.diagnosticService.getDetector(this.detector, this.detectorControlService.startTimeString, this.detectorControlService.endTimeString,
+            this.detectorControlService.shouldRefresh, this.detectorControlService.isInternalView, queryParams).subscribe((response: DetectorResponse) => {
+                let dataset = response.dataset;
+                let table = dataset[0].table;
+                let rows = table.rows;
+                let submissionState = rows[0][1];
+                this.scanState = submissionState;
+                if (submissionState == "Completed") {
+                    this.setScanState(submissionState);
+                    let completedTime = rows[0][3];
+                    let currentMoment = moment();
+                    let completedMoment = moment(completedTime);
+                    let diff = currentMoment.diff(completedMoment, 'seconds');
+                    // If scan has been completed more than a minute ago, display default message
+                    if (diff >= 60) {
+                        this.setDefaultScanStatus();
+                    } else {
+                        this.scanStatusMessage = "Scanning is complete. Click the below button to view the latest changes now.";
+                        this.allowScanAction = true;
+                        this.showViewChanges = true;
+                    }
+                } else if (submissionState == "No active requests") {
+                    this.setScanState("");
+                    this.setDefaultScanStatus();
+                } else {
+                    this.subscription = interval(5000).subscribe(res => {
+                        this.pollForScanStatus();
+                    });
+                }
+            }, (error: any) => {
+                // Stop timer in case of any error
+                if (this.subscription) {
+                    this.subscription.unsubscribe();
+                }
+                this.scanState = "";
+                this.setScanState("");
+            });
     }
 
     private pollForScanStatus() {
         this.scanStatusMessage = "Monitoring scan status...";
         this.scanState = "Polling";
         this.allowScanAction = false;
-        let queryParams = `&scanAction=checkscan`;
+        let queryParams = `&fId=103&btnId=9&inpId=5&val=checkscan`;
+        if(!this.changeAnalysisService.getAppService()) {
+            let dependentResourceId = this.changeAnalysisService.getResouceUri();
+            let sub = ChangeAnalysisUtilities.getSubscription(dependentResourceId);
+            let resourceGroups = ChangeAnalysisUtilities.getResourceGroup(dependentResourceId);
+            let provider = ChangeAnalysisUtilities.getResourceType(dependentResourceId);
+            let resourceName = ChangeAnalysisUtilities.getResourceName(dependentResourceId, provider);
+            queryParams += `&inpId=1&val=${encodeURIComponent(sub)}&inpId=2&val=${encodeURIComponent(resourceGroups)}&inpId=3&val=${encodeURIComponent(provider)}&inpId=4&val=${encodeURIComponent(resourceName)}`;
+        }
         this.diagnosticService.getDetector(this.detector, this.detectorControlService.startTimeString, this.detectorControlService.endTimeString,
             this.detectorControlService.shouldRefresh, this.detectorControlService.isInternalView, queryParams).subscribe((response: DetectorResponse) => {
                 let dataset = response.dataset;
@@ -458,10 +468,18 @@ export class ChangesetsViewComponent extends DataRenderBaseComponent implements 
 
     refreshTimeline(): void {
         this.loadingChangesTimeline = true;
-        let queryParams = `&changeSetId=*`;
         this.scanStatusMessage = "Fetching scan results...";
         this.scanState = "Polling";
         this.allowScanAction = false;
+        let queryParams = `&fId=102&btnId=9&inpId=5&val=*`;
+        if(!this.changeAnalysisService.getAppService()) {
+            let dependentResourceId = this.changeAnalysisService.getResouceUri();
+            let sub = ChangeAnalysisUtilities.getSubscription(dependentResourceId);
+            let resourceGroups = ChangeAnalysisUtilities.getResourceGroup(dependentResourceId);
+            let provider = ChangeAnalysisUtilities.getResourceType(dependentResourceId);
+            let resourceName = ChangeAnalysisUtilities.getResourceName(dependentResourceId, provider);
+            queryParams += `&inpId=1&val=${encodeURIComponent(sub)}&inpId=2&val=${encodeURIComponent(resourceGroups)}&inpId=3&val=${encodeURIComponent(provider)}&inpId=4&val=${encodeURIComponent(resourceName)}`;
+        }
         this.diagnosticService.getDetector(this.detector, this.detectorControlService.startTimeString, this.detectorControlService.endTimeString,
         this.detectorControlService.shouldRefresh, this.detectorControlService.isInternalView, queryParams).subscribe((response: DetectorResponse) =>{
             // Reload timeline with latest changes
@@ -507,7 +525,7 @@ export class ChangesetsViewComponent extends DataRenderBaseComponent implements 
     }
 
     setDefaultScanStatus(): void {
-        this.scanStatusMessage = "Click the below button to to scan your web app and get the latest changes";
+        this.scanStatusMessage = "Click the below button to to scan your resource and get the latest changes";
         this.allowScanAction = true;
         this.showViewChanges = false;
         this.scanState = '';
