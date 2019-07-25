@@ -234,7 +234,21 @@ export class ChangesetsViewComponent extends DataRenderBaseComponent implements 
             this.loadingChangesTable = false;
             this.changesTableError = '';
         } else {
-            let queryParams = `&changeSetId=${encodeURIComponent(changeSetId)}`;
+            // let queryParams = `&changeSetId=${encodeURIComponent(changeSetId)}`;
+            // if(!this.changeAnalysisService.getAppService) {
+            //     queryParams += `&resourceUri=${encodeURIComponent(this.changeAnalysisService.getResouceUri())}`;
+            // }
+
+            let queryParams = `&fId=102&btnId=9&inpId=5&val=${encodeURIComponent(changeSetId)}`;
+            if(!this.changeAnalysisService.getAppService()) {
+                let dependentResourceId = this.changeAnalysisService.getResouceUri();
+                let sub = ChangeAnalysisUtilities.getSubscription(dependentResourceId);
+                let resourceGroups = ChangeAnalysisUtilities.getResourceGroup(dependentResourceId);
+                let provider = ChangeAnalysisUtilities.getResourceType(dependentResourceId);
+                let resourceName = ChangeAnalysisUtilities.getResourceName(dependentResourceId, provider);
+                queryParams += `&inpId=1&val=${encodeURIComponent(sub)}&inpId=2&val=${encodeURIComponent(resourceGroups)}&inpId=3&val=${encodeURIComponent(provider)}&inpId=4&val=${encodeURIComponent(resourceName)}`;
+            }
+
             this.diagnosticService.getDetector(this.detector, this.detectorControlService.startTimeString, this.detectorControlService.endTimeString,
             this.detectorControlService.shouldRefresh, this.detectorControlService.isInternalView, queryParams).subscribe((response: DetectorResponse) =>{
             this.changeSetsCache[changeSetId] = response.dataset;
