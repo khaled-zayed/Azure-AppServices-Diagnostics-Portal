@@ -196,6 +196,7 @@ export class ChangesetsViewComponent extends DataRenderBaseComponent implements 
                 renderingProperties: RenderingType.ChangesView
             }];
             this.initiatedBy = this.changeSetsLocalCopy.hasOwnProperty(data.rows[0][0]) ? this.getInitiatedByUsers(this.changeSetsLocalCopy[data.rows[0][0]]) : [];
+            this.changeDetectorRef.detectChanges();
             this.loadingChangesTable = false;
             this.changesTableError = '';
         }

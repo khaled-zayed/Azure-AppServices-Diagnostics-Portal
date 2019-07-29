@@ -103,7 +103,10 @@ export class AppDependenciesComponent extends DataRenderBaseComponent implements
                   }
             },
             interaction: {
-                hover: true
+                hover: true,
+                zoomView: false,
+                dragNodes: false,
+                dragView: false
             }
         };
         var network = new Network(container, networkData, networkOptions);
