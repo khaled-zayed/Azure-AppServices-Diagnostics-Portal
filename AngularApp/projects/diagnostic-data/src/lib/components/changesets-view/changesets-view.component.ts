@@ -235,11 +235,6 @@ export class ChangesetsViewComponent extends DataRenderBaseComponent implements 
             this.loadingChangesTable = false;
             this.changesTableError = '';
         } else {
-            // let queryParams = `&changeSetId=${encodeURIComponent(changeSetId)}`;
-            // if(!this.changeAnalysisService.getAppService) {
-            //     queryParams += `&resourceUri=${encodeURIComponent(this.changeAnalysisService.getResouceUri())}`;
-            // }
-
             let queryParams = `&fId=102&btnId=9&inpId=5&val=${encodeURIComponent(changeSetId)}`;
             if(!this.changeAnalysisService.getAppService()) {
                 let dependentResourceId = this.changeAnalysisService.getResouceUri();
