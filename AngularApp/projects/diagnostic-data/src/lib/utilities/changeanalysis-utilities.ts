@@ -29,8 +29,11 @@ export class ChangeAnalysisUtilities {
     ];
 
     public static  prepareDisplayValueForTable(displayName: string): string {
-        displayName = displayName.replace("D:\\home\\site\\wwwroot", "");
-        return displayName;
+        if(displayName) {
+            displayName = displayName.replace("D:\\home\\site\\wwwroot", "");
+            return displayName;
+        }
+        return "N/A";
     }
 
       public static prepareValuesForDiffView(diffvalue: any): DiffEditorModel {

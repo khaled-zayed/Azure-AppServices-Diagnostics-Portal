@@ -8,6 +8,7 @@ import { ApplensDiagnosticService } from '../services/applens-diagnostic.service
 import { DetectorType } from 'diagnostic-data';
 import { TelemetryService } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.service';
 import {TelemetryEventNames} from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.common';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'side-nav',
@@ -35,8 +36,10 @@ export class SideNavComponent implements OnInit {
 
   constructor(private _router: Router, private _activatedRoute: ActivatedRoute, private _adalService: AdalService, private _diagnosticApiService: ApplensDiagnosticService, public resourceService: ResourceService, private _telemetryService: TelemetryService) {
     this.contentHeight = (window.innerHeight - 139) + 'px';
-    let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
-    this.userId = alias.replace('@microsoft.com', '');
+    if(environment.adal.enabled){
+      let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
+      this.userId = alias.replace('@microsoft.com', '');
+    }
   }
 
   documentation: CollapsibleMenuItem[] = [

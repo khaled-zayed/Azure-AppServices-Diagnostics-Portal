@@ -65,7 +65,6 @@ namespace AppLensV3
         private async Task<IActionResult> GetSiteInternal(string stamp, string siteName)
         {
             var siteDetailsTask = stamp == null ? _observerService.GetSite(siteName) : _observerService.GetSite(stamp, siteName);
-
             var siteDetailsResponse = await siteDetailsTask;
 
             var details = new

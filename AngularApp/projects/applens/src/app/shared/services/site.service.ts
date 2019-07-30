@@ -9,26 +9,23 @@ import { HttpResponse } from '@angular/common/http';
 @Injectable()
 export class SiteService extends ResourceService {
 
-    private _currentResource: BehaviorSubject<Observer.ObserverSiteInfo> = new BehaviorSubject(null);
+  private _currentResource: BehaviorSubject<Observer.ObserverSiteInfo> = new BehaviorSubject(null);
 
-    private _siteObject: Observer.ObserverSiteInfo;
+  private _siteObject: Observer.ObserverSiteInfo;
 
-    constructor(@Inject(RESOURCE_SERVICE_INPUTS) inputs: ResourceServiceInputs, protected _observerApiService: ObserverService) {
-        super(inputs);
-    }
+  constructor(@Inject(RESOURCE_SERVICE_INPUTS) inputs: ResourceServiceInputs, protected _observerApiService: ObserverService) {
+    super(inputs);
+  }
 
-    public startInitializationObservable() {
-        this._initialized = this._observerApiService.getSite(this._armResource.resourceName).pipe(
-            mergeMap((observerResponse: Observer.ObserverSiteResponse) => {
-                this._siteObject = this.getSiteFromObserverResponse(observerResponse);
-                this._currentResource.next(this._siteObject);
-                return this._observerApiService.getSiteRequestBody(this._siteObject.SiteName, this._siteObject.InternalStampName);
-            }), map((requestBody: any) => {
-                this._requestBody = requestBody.details;
-                this.updatePesIdAndImgSrc();
-                return true;
-            }));
-    }
+  public startInitializationObservable() {
+    this._initialized = this._observerApiService.getSite(this._armResource.resourceName)
+      .pipe(map((observerResponse: Observer.ObserverSiteResponse) => {
+        this._observerResource = this._siteObject = this.getSiteFromObserverResponse(observerResponse);
+        this._currentResource.next(this._siteObject);
+        this.updatePesIdAndImgSrc();
+        return true;
+      }))
+  }
 
     public getCurrentResource(): Observable<any> {
         return this._currentResource;
@@ -49,12 +46,12 @@ export class SiteService extends ResourceService {
     }
 
     public updatePesIdAndImgSrc() {
-        if (this._requestBody.Kind && this._requestBody.Kind.toString().toLowerCase().indexOf("functionapp") !== -1) {
+        if (this._siteObject.Kind && this._siteObject.Kind.toString().toLowerCase().indexOf("functionapp") !== -1) {
             this.pesId = '16072';
             this.imgSrc = 'assets/img/Azure-Functions-Logo.png';
             this.staticSelfHelpContent = 'microsoft.function';
         }
-        else if (this._requestBody.IsLinux) {
+        else if (this._siteObject.IsLinux != undefined && this._siteObject.IsLinux) {
             this.pesId = '16170';   
             this.imgSrc = 'assets/img/Azure-Tux-Logo.png';
         }

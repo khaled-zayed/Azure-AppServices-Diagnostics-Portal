@@ -19,7 +19,7 @@ export class ApplensDiagnosticService {
       detector,
       startTime,
       endTime,
-      this._resourceService.getRequestBody(),
+      null,
       refresh,
       internalView,
       formQueryParams);
@@ -32,7 +32,7 @@ export class ApplensDiagnosticService {
       systemInvokerId,
       dataSource,
       timeRange,
-      this._resourceService.getRequestBody());
+      null);
   }
 
   getDetectors(internalClient: boolean = true, query?: string): Observable<DetectorMetaData[]> {
@@ -42,7 +42,7 @@ export class ApplensDiagnosticService {
       return this._diagnosticApi.getDetectors(
         this._resourceService.versionPrefix, 
         this._resourceService.getCurrentResourceId(true),
-        this._resourceService.getRequestBody(),
+        null,
         queryParams,
         internalClient);
   }
@@ -68,7 +68,7 @@ export class ApplensDiagnosticService {
     return this._diagnosticApi.getGists(
       this._resourceService.versionPrefix,
       this._resourceService.getCurrentResourceId(true),
-      this._resourceService.getRequestBody());
+      null);
   }
 
 
@@ -85,7 +85,6 @@ export class ApplensDiagnosticService {
   }
 
   getCompilerResponse(body: any, isSystemInvoker: boolean, detectorId: string = '', startTime: string = '', endTime: string = '', dataSource: string = '', timeRange: string = '', additionalParams: any): Observable<QueryResponse<DetectorResponse>> {
-    body.resource = this._resourceService.getRequestBody();
     if (isSystemInvoker === false)
     {
       return this._diagnosticApi.getCompilerResponse(
@@ -109,7 +108,6 @@ export class ApplensDiagnosticService {
   }
 
   prepareLocalDevelopment(body: any, detectorId: string = '', startTime: string = '', endTime: string = '', dataSource: string = '', timeRange: string = ''): Observable<string> {
-    body.resource = this._resourceService.getRequestBody();
     detectorId = detectorId === '' ? 'newdetector' : detectorId;
     return this._diagnosticApi.getLocalDevelopmentResponse(
       detectorId.toLowerCase(),

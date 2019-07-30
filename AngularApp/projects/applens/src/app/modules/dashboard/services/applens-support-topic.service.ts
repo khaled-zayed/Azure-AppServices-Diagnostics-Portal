@@ -211,9 +211,9 @@ export class ApplensSupportTopicService {
     public getSelfHelpPath(): string {
         let selfHelpPath = this._resourceService.staticSelfHelpContent;
         let pesId = this._resourceService.pesId;
-        let requestBody = this._resourceService.getRequestBody();
+        let resource = this._resourceService.getResourceByObserver();
         if (pesId === '14748') {
-            if (requestBody.Kind === "functionapp") {
+            if (resource.Kind === "functionapp") {
                 selfHelpPath = "microsoft.function";
             }
         }

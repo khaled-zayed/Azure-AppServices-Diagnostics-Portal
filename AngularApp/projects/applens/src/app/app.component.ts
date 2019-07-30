@@ -8,14 +8,16 @@ import { environment } from '../environments/environment';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-
+  env = environment;
   constructor(private _adalService: AdalService) {
-    this._adalService.init({
-      clientId: environment.adal.clientId,
-      popUp: window.parent !== window,
-      redirectUri: `${window.location.origin}`,
-      postLogoutRedirectUri: `${window.location.origin}/login`,
-      cacheLocation: 'localStorage'
-    });
+    if (environment.adal.enabled){
+      this._adalService.init({
+        clientId: environment.adal.clientId,
+        popUp: window.parent !== window,
+        redirectUri: `${window.location.origin}`,
+        postLogoutRedirectUri: `${window.location.origin}/login`,
+        cacheLocation: 'localStorage'
+       });
+    }
   }
 }

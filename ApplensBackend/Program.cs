@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore;
+﻿using System.Reflection;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 
@@ -17,10 +18,12 @@ namespace AppLensV3
             .AddCommandLine(args)
             .Build();
 
+            var assemblyName = typeof(Startup).GetTypeInfo().Assembly.FullName;
+
             return
             WebHost.CreateDefaultBuilder(args)
                 .UseConfiguration(config)
-                .UseStartup<Startup>()
+                .UseStartup(assemblyName)
                 .Build();
         }
     }

@@ -49,7 +49,8 @@ export class DaasMainComponent implements OnInit {
 
     this._siteService.currentSite.subscribe(site => {
       if (site) {
-        this.appType = site.appType;
+        this.appType = site.kind.toLowerCase().indexOf('functionapp') >= 0 ? AppType.FunctionApp : AppType.WebApp;
+        this.platform = site.kind.toLowerCase().indexOf('linux') >= 0 ? OperatingSystem.linux : OperatingSystem.windows;
         this.sku = site.sku;
         this.sku.toLowerCase();
 
@@ -58,7 +59,6 @@ export class DaasMainComponent implements OnInit {
           const resourceUriParts = this._siteService.parseResourceUri(startupInfo.resourceId);
           this._appAnalysisService.getDiagnosticProperties(resourceUriParts.subscriptionId, resourceUriParts.resourceGroup, resourceUriParts.siteName, resourceUriParts.slotName).subscribe((data: IDiagnosticProperties) => {
             this.AppStack = data && data.appStack && data.appStack != '' ? data.appStack : 'ASP.Net';
-            this.platform = data && data.isLinux ? OperatingSystem.linux : OperatingSystem.windows;
             this._categoryService.Categories.subscribe(categories => {
               const toolsCategories = categories.filter(x => x.Name === 'Diagnostic Tools');
               if (toolsCategories.length > 0 && (this.sku.toLowerCase() === 'standard' || this.sku.toLowerCase().indexOf('premium') > -1 || this.sku.toLowerCase() === 'isolated')) {

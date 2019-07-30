@@ -8,10 +8,10 @@
       <div class="col-sm-8">
       <label class="col-sm-4 col-md-2 col-form-label"> {{formInput.inputLabel}} </label>
       <div class="col-sm-8 col-md-6">
-        <input type="text" class="form-control" [id]=formInput.internalId [(ngModel)]="formInput.inputValue" (keyup)="inputChanged(formInput)" maxlength="50">
+        <input type="text" class="form-control" [id]=formInput.internalId [(ngModel)]="formInput.inputValue" (keyup)="inputChanged(formInput)" maxlength="150">
         <div class="text-danger" *ngIf="formInput.displayValidation">Please provide a value.</div>
-      </div>             
-      
+      </div>
+
     </div>
     </div>
   </ng-template>
@@ -23,9 +23,9 @@
           </button>
         </ng-template>
       </div>
-  
- 
- 
+
+
+
 <div class="form-response-margin">
   <!-- show loader when loading form response-->
     <loader-view *ngIf="element.loadingFormResponse" message="Loading Data...">
@@ -38,7 +38,7 @@
     <div *ngIf="element.formResponse != undefined" >
         <div *ngFor="let data of element.formResponse.dataset">
            <dynamic-data [diagnosticData]="data" [startTime]="startTime" [endTime]="endTime" [detectorEventProperties]="detectorEventProperties"></dynamic-data>
-         </div> 
+         </div>
        </div>
 </div>
 

@@ -11,6 +11,8 @@ import { UserInfo } from '../user-profile/user-profile.component';
 import { StartupService } from '../../../shared/services/startup.service';
 import { SearchService } from '../services/search.service';
 import { v4 as uuid } from 'uuid';
+import { environment } from '../../../../environments/environment';
+import {DiagnosticApiService} from '../../../shared/services/diagnostic-api.service';
 
 @Component({
   selector: 'dashboard',
@@ -36,7 +38,7 @@ export class DashboardComponent implements OnDestroy {
 
   constructor(public resourceService: ResourceService, private _detectorControlService: DetectorControlService,
     private _router: Router, private _activatedRoute: ActivatedRoute, private _navigator: FeatureNavigationService,
-    private _diagnosticService: ApplensDiagnosticService, private _adalService: AdalService, public ngxSmartModalService: NgxSmartModalService, private startupService: StartupService, public _searchService: SearchService) {
+    private _diagnosticService: ApplensDiagnosticService, private _adalService: AdalService, public ngxSmartModalService: NgxSmartModalService, private startupService: StartupService, public _searchService: SearchService, private _diagnosticApiService: DiagnosticApiService) {
     this.contentHeight = (window.innerHeight - 50) + 'px';
 
     this.navigateSub = this._navigator.OnDetectorNavigate.subscribe((detector: string) => {
@@ -73,16 +75,18 @@ export class DashboardComponent implements OnDestroy {
       this._router.navigate([], { queryParams: routeParams, relativeTo: this._activatedRoute });
     }
 
-    let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
-    this.userId = alias.replace('@microsoft.com', '');
-    this._diagnosticService.getUserPhoto(this.userId).subscribe(image => {
-      this.userPhotoSource = image;
-    });
-
-    this._diagnosticService.getUserInfo(this.userId).subscribe((userInfo: UserInfo) => {
-      this.userName = userInfo.givenName;
-      this.displayName = userInfo.displayName;
-    });
+    if(environment.adal.enabled){
+      let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
+      this.userId = alias.replace('@microsoft.com', '');
+      this._diagnosticService.getUserPhoto(this.userId).subscribe(image => {
+        this.userPhotoSource = image;
+      });
+  
+      this._diagnosticService.getUserInfo(this.userId).subscribe((userInfo: UserInfo) => {
+        this.userName = userInfo.givenName;
+        this.displayName = userInfo.displayName;
+      });
+    }
   }
 
   ngOnInit() {
@@ -98,6 +102,7 @@ export class DashboardComponent implements OnDestroy {
         }
         else if (serviceInputs.resourceType.toString() === 'Microsoft.Web/sites')
         {
+            this._diagnosticApiService.GeomasterServiceAddress = this.resource["GeomasterServiceAddress"];
             this.observerLink = "https://wawsobserver.azurewebsites.windows.net/sites/"+ this.resource.SiteName;
         }
 

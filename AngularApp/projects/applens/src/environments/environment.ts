@@ -5,6 +5,7 @@
 export const environment = {
   production: false,
   adal: {
+    enabled: true,
     clientId: '0128de1e-8cb3-480c-8c65-9b08be97dd40',
   }
 };

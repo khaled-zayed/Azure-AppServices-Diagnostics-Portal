@@ -189,7 +189,8 @@ namespace AppLensV3.Services.DiagnosticClientService
         {
             return !_nonPassThroughResourceProviderList.Exists(p => path.ToLower().Contains(p))
                 || new Regex("/detectors/[^/]*/statistics").IsMatch(path.ToLower())
-                || path.ToLower().Contains("/diagnostics/publish");
+                || path.ToLower().Contains("/diagnostics/publish")
+                || path.ToLower().StartsWith("observer");
         }
 
         private X509Certificate2 GetMyX509Certificate()
@@ -233,7 +234,10 @@ namespace AppLensV3.Services.DiagnosticClientService
         {
             foreach (var header in additionalHeaders)
             {
-                request.Headers.Add(header.Key, header.Value);
+                if(!request.Headers.Contains(header.Key))
+                {
+                    request.Headers.Add(header.Key, header.Value);
+                }
             }
         }
     }

@@ -13,7 +13,7 @@ export class ResourceService {
   public pesId: string;
   public staticSelfHelpContent: string;
 
-  protected _requestBody: any = null;
+  protected _observerResource: any = null;
   protected _armResource: ArmResource;
   protected _initialized: Observable<boolean>;
 
@@ -51,7 +51,7 @@ export class ResourceService {
     return observableOf(this._armResource);
   }
 
-  public getRequestBody(): any {
-    return this._requestBody;
+  public getResourceByObserver(): any {
+    return this._observerResource;
   }
 }

@@ -80,6 +80,39 @@
                   "with": "projects/applens/src/environments/environment.local.ts"
                 }
               ]
+            },
+            "nationalcloud-production":{
+              "fileReplacements": [
+                {
+                  "replace": "projects/applens/src/environments/environment.ts",
+                  "with": "projects/applens/src/environments/environment.ncloud-prod.ts"
+                },
+                {
+                  "replace": "projects/applens/src/app/shared/auth/aad-auth-guard.service.ts",
+                  "with": "projects/applens/src/app/shared/auth/aad-auth-guard.service.passthrough.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true
+            },
+            "nationalcloud-local":{
+              "fileReplacements": [
+                {
+                  "replace": "projects/applens/src/environments/environment.ts",
+                  "with": "projects/applens/src/environments/environment.ncloud.ts"
+                },
+                {
+                  "replace": "projects/applens/src/app/shared/auth/aad-auth-guard.service.ts",
+                  "with": "projects/applens/src/app/shared/auth/aad-auth-guard.service.passthrough.ts"
+                }
+              ]
             }
           }
         },
@@ -94,6 +127,12 @@
             },
             "local": {
               "browserTarget": "applens:build:local"
+            },
+            "nationalcloud-production": {
+              "browserTarget": "applens:build:nationalcloud-production"
+            },
+            "nationalcloud-local": {
+              "browserTarget": "applens:build:nationalcloud-local"
             }
           }
         },

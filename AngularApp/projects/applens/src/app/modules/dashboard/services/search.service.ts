@@ -4,6 +4,7 @@ import { DetectorItem } from '../search-results/search-results.component';
 import {AdalService} from 'adal-angular4';
 import {forkJoin, of} from 'rxjs';
 import { map, catchError} from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 
 @Injectable()
 export class SearchService {
@@ -16,13 +17,15 @@ export class SearchService {
     public detectors: DetectorItem[] = [];
     
     constructor(private _applensDiagnosticService: ApplensDiagnosticService, private _adalService: AdalService){
-        let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
-        let userId = alias.replace('@microsoft.com', '').toLowerCase();
-        let hasTestersAccess = this._applensDiagnosticService.getHasTestersAccess(userId).pipe(map((res) => res), catchError(e => of(false)));
-        let isEnabledForProductId = this._applensDiagnosticService.getSearchEnabledForProductId().pipe(map((res) => res), catchError(e => of(false)));
-        forkJoin([hasTestersAccess, isEnabledForProductId]).subscribe(enabledFlags => {
-            this.searchIsEnabled = enabledFlags[0] && enabledFlags[1];
-        });
+        if(environment.adal.enabled){
+            let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
+            let userId = alias.replace('@microsoft.com', '').toLowerCase();
+            let hasTestersAccess = this._applensDiagnosticService.getHasTestersAccess(userId).pipe(map((res) => res), catchError(e => of(false)));
+            let isEnabledForProductId = this._applensDiagnosticService.getSearchEnabledForProductId().pipe(map((res) => res), catchError(e => of(false)));
+            forkJoin([hasTestersAccess, isEnabledForProductId]).subscribe(enabledFlags => {
+                this.searchIsEnabled = enabledFlags[0] && enabledFlags[1];
+            });
+        }
     }
 
     ngOnInit(){
