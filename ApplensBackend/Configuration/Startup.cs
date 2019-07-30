@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using AppLensV3.Services;
+using AppLensV3.Services.DiagnosticClientService;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Builder;
@@ -65,7 +66,6 @@ namespace AppLensV3
                 DiagnosticClientToken.Instance.Initialize(Configuration);
             }
 
-            if (Configuration.GetValue<bool>("DatacenterFederationEnabled", false))
             services.AddAuthentication(auth =>
             {
                 auth.DefaultScheme = AzureADDefaults.BearerAuthenticationScheme;

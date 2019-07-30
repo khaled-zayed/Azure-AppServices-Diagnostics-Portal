@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using AppLensV3.Services;
+using AppLensV3.Services.DiagnosticClientService;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.WsFederation;
@@ -38,7 +39,7 @@ namespace AppLensV3.Configuration
         /// <param name="services">services.</param>
         public virtual void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IDiagnosticClientService, DiagnosticRoleClient>();
+            services.AddSingleton<IDiagnosticClientService, DiagnosticClient>();
             services.AddSingleton<IObserverClientService, DiagnosticObserverClientService>();
             services.AddSingleton<IEmailNotificationService, NullableEmailNotificationService>();
             services.AddMemoryCache();
