@@ -123,7 +123,7 @@ export class ChangeAnalysisUtilities {
     public static getImgPathForResource(searchResourceType: string): string {
         let azureIconsList = this.azureResourceList;
         let resource = azureIconsList.find(element => element.resourceType.toLowerCase() == searchResourceType.toLowerCase());
-        return resource ? resource.imgPath : ChangeAnalysisUtilities.basePath + 'AzureResouce.png';
+        return resource ? resource.imgPath : ChangeAnalysisUtilities.basePath + 'AzureResource.png';
     }
 
     public static getSubscription(resourceUri: string): string {

@@ -160,6 +160,9 @@ namespace AppLensV3.Services.DiagnosticClientService
                         Content = new StringContent(body ?? string.Empty, Encoding.UTF8, "application/json")
                     };
 
+                    requestMessage.Headers.Add("x-ms-internal-client", internalClient.ToString());
+                    requestMessage.Headers.Add("x-ms-internal-view", internalView.ToString());
+
                     if (additionalHeaders != null)
                     {
                         AddAdditionalHeaders(additionalHeaders, ref requestMessage);
@@ -170,9 +173,6 @@ namespace AppLensV3.Services.DiagnosticClientService
                         var authToken = await DiagnosticClientToken.Instance.GetAuthorizationTokenAsync();
                         requestMessage.Headers.Add("Authorization", authToken);
                     }
-
-                    requestMessage.Headers.Add("x-ms-internal-client", internalClient.ToString());
-                    requestMessage.Headers.Add("x-ms-internal-view", internalView.ToString());
 
                     response = await _client.SendAsync(requestMessage);
                 }
