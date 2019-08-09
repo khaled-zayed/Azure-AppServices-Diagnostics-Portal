@@ -14,7 +14,7 @@ import { DropdownComponent } from '../dropdown/dropdown.component';
 import { DynamicInsightComponent } from '../dynamic-insight/dynamic-insight.component';
 import { EmailComponent } from '../email/email.component';
 import { InsightsComponent } from '../insights/insights.component';
-import { MarkdownComponent } from '../markdown/markdown.component';
+import { MarkdownViewComponent } from '../markdown-view/markdown-view.component';
 import { SolutionComponent } from '../solution/solution.component';
 import { GuageControlComponent } from '../guage-control/guage-control.component';
 import { TimeSeriesGraphComponent } from '../time-series-graph/time-series-graph.component';
@@ -32,7 +32,7 @@ import {AppDependenciesComponent} from '../app-dependencies/app-dependencies.com
   styleUrls: ['./dynamic-data.component.scss'],
   entryComponents: [
     TimeSeriesGraphComponent, DataTableComponent, DataSummaryComponent, EmailComponent,
-    InsightsComponent, TimeSeriesInstanceGraphComponent, DynamicInsightComponent, MarkdownComponent,
+    InsightsComponent, TimeSeriesInstanceGraphComponent, DynamicInsightComponent, MarkdownViewComponent,
     DetectorListComponent, DropdownComponent, CardSelectionComponent, SolutionComponent, GuageControlComponent, FormComponent,
     ChangeAnalysisOnboardingComponent, ChangesetsViewComponent, AppDependenciesComponent, AppInsightsMarkdownComponent
   ]
@@ -96,7 +96,7 @@ export class DynamicDataComponent implements OnInit {
       case RenderingType.DynamicInsight:
         return DynamicInsightComponent;
       case RenderingType.Markdown:
-        return MarkdownComponent;
+        return MarkdownViewComponent;
       case RenderingType.DetectorList:
         return DetectorListComponent;
       case RenderingType.DropDown:

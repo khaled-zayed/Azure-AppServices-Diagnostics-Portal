@@ -1,11 +1,13 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, Renderer2, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { MarkdownRendering, DiagnosticData } from '../../models/detector';
 import { DataRenderBaseComponent } from '../data-render-base/data-render-base.component';
-import { MarkdownService } from 'ngx-markdown';
+import { MarkdownService, MarkdownComponent } from 'ngx-markdown';
 import { ClipboardService } from '../../services/clipboard.service';
 import { DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig } from '../../config/diagnostic-data-config';
 import { TelemetryService } from '../../services/telemetry/telemetry.service';
 import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
+import { Router } from '@angular/router';
+import { LinkInterceptorService } from '../../services/link-interceptor.service';
 
 const emailTemplate = `To:
 Subject: Case Email
@@ -22,18 +24,25 @@ Content-Type: text/html
 
 @Component({
   selector: 'markdown-view',
-  templateUrl: './markdown.component.html',
-  styleUrls: ['./markdown.component.scss']
+  templateUrl: './markdown-view.component.html',
+  styleUrls: ['./markdown-view.component.scss']
 })
-export class MarkdownComponent extends DataRenderBaseComponent {
+export class MarkdownViewComponent extends DataRenderBaseComponent implements AfterViewInit, OnDestroy {
+
+  @ViewChild(MarkdownComponent)
+  public set markdown(v: MarkdownComponent) {
+    this.markdownDiv = v;
+  }
+
+  private markdownDiv: MarkdownComponent;
 
   renderingProperties: MarkdownRendering;
-
-  markdown: string;
+  markdownData: string;
   isPublic: boolean;
+  listenObj: any;
 
-  constructor(private _markdownService: MarkdownService, private _clipboard: ClipboardService,
-    @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, protected telemetryService: TelemetryService) {
+  constructor(private _markdownService: MarkdownService, private _clipboard: ClipboardService, private _interceptorService: LinkInterceptorService,
+    @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, protected telemetryService: TelemetryService, protected renderer: Renderer2, private router: Router) {
     super(telemetryService);
     this.isPublic = config && config.isPublic;
   }
@@ -48,12 +57,12 @@ export class MarkdownComponent extends DataRenderBaseComponent {
   private createViewModel() {
     const rows = this.diagnosticData.table.rows;
     if (rows.length > 0 && rows[0].length > 0) {
-      this.markdown = rows[0][0];
+      this.markdownData = rows[0][0];
     }
   }
 
   copyMarkdown() {
-    const markdownHtml = this._markdownService.compile(this.markdown);
+    const markdownHtml = this._markdownService.compile(this.markdownData);
     this._clipboard.copyAsHtml(markdownHtml);
 
     // Send telemetry event for clicking copyMarkdown
@@ -65,7 +74,7 @@ export class MarkdownComponent extends DataRenderBaseComponent {
   }
 
   openEmail() {
-    const markdownHtml = this._markdownService.compile(this.markdown);
+    const markdownHtml = this._markdownService.compile(this.markdownData);
     const mailto = emailTemplate.replace('{body}', markdownHtml);
     const data = new Blob([mailto], { type: 'text/plain' });
     const textFile = window.URL.createObjectURL(data);
@@ -92,4 +101,17 @@ export class MarkdownComponent extends DataRenderBaseComponent {
 
     document.body.removeChild(element);
   }
+
+  ngAfterViewInit() {
+    if (this.markdownDiv) {
+      this.listenObj = this.renderer.listen(this.markdownDiv.element.nativeElement, 'click', (evt) => this._interceptorService.interceptLinkClick(evt, this.router, this.detector, this.telemetryService));
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.listenObj) {
+      this.listenObj();
+    }
+  }
+
 }

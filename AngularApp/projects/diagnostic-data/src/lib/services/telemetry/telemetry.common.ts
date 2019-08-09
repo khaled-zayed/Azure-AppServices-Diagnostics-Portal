@@ -16,6 +16,7 @@ export const TelemetryEventNames = {
     InsightsSummary: 'InsightsSummary',
     ChildDetectorsSummary: 'ChildDetectorsSummary',
     MarkdownClicked: 'MarkdownClicked',
+    LinkClicked: 'LinkClicked',
     StarRatingSubmitted: 'StarRatingSubmitted',
     CardClicked: 'CardClicked',
     FormButtonClicked: 'FormButtonClicked',

@@ -37,7 +37,7 @@ import { FeedbackComponent } from './components/feedback/feedback.component';
 import { InsightsComponent } from './components/insights/insights.component';
 import { LoaderViewComponent } from './components/loader-view/loader-view.component';
 import { MarkdownEditorComponent } from './components/markdown-editor/markdown-editor.component';
-import { MarkdownComponent } from './components/markdown/markdown.component';
+import { MarkdownViewComponent } from './components/markdown-view/markdown-view.component';
 import { Nvd3GraphComponent } from './components/nvd3-graph/nvd3-graph.component';
 import {
   StarRatingFeedbackComponent
@@ -94,7 +94,7 @@ import { AppDependenciesComponent } from './components/app-dependencies/app-depe
     Nvd3GraphComponent, TimeSeriesGraphComponent, DataTableComponent, DynamicDataComponent,
     DataRenderBaseComponent, DataContainerComponent, TimeSeriesInstanceGraphComponent, DetectorViewComponent,
     DataSummaryComponent, EmailComponent, InsightsComponent, LoaderViewComponent, DynamicInsightComponent,
-    MarkdownComponent, DetectorListComponent, DetectorOrderPipe, StarRatingComponent, StarRatingFeedbackComponent,
+    MarkdownViewComponent, DetectorListComponent, DetectorOrderPipe, StarRatingComponent, StarRatingFeedbackComponent,
     DropdownComponent, StatusIconComponent, DetectorControlComponent, DetectorContainerComponent, InternalPipe,
     CommAlertComponent, FeedbackComponent, CopyInsightDetailsComponent, MarkdownEditorComponent, CardSelectionComponent,
     GuageGraphicComponent, GuageControlComponent, SolutionComponent, SolutionsComponent, FormComponent,
