@@ -60,6 +60,14 @@
         },
         {
             "service": "ResourceService",
+            "resourceType": "Microsoft.ServiceFabric/clusters",
+            "templateFileName": "ServiceFabric",
+            "imgSrc": "assets/img/Azure-Service-Fabric-Logo.png",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "serviceFabric"
+        },
+        {
+            "service": "ResourceService",
             "resourceType": "Microsoft.ApiManagement/service",
             "templateFileName": "ApiManagementService",
             "imgSrc": "assets/img/Azure-ApiManagement-Logo.png",
