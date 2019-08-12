@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { TelemetryService } from './telemetry/telemetry.service';
-import { Router } from '@angular/router';
+import { Router, NavigationExtras } from '@angular/router';
 import { TelemetryEventNames } from './telemetry/telemetry.common';
 
 const isAbsolute = new RegExp('(?:^[a-z][a-z0-9+.-]*:|\/\/)', 'i');
@@ -27,10 +27,14 @@ export class LinkInterceptorService {
       };
 
       telemetryService.logEvent(TelemetryEventNames.LinkClicked, linkClickedProps);
+      let navigationExtras: NavigationExtras = {
+        queryParamsHandling: 'preserve',
+        preserveFragment: true
+      };
 
       if (linkURL && !isAbsolute.test(linkURL)) {
         e.preventDefault();
-        router.navigate([linkURL]);
+        router.navigate([linkURL], navigationExtras);
       }
     }
   }
