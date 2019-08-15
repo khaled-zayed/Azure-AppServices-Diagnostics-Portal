@@ -98,7 +98,7 @@
         },
         {
             "service": "ResourceService",
-            "resourceType": "Microsoft.Microservices4Spring/appClusters",
+            "resourceType": "Microsoft.AppPlatform/Spring",
             "templateFileName": "SpringCloudService",
             "imgSrc": "assets/img/Azure-WebApps-Logo.png",
             "versionPrefix": "",
