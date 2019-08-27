@@ -80,8 +80,8 @@ export class DiagnosticApiService {
     return useCache ? this._cacheService.get(this.getCacheKey(HttpMethod.POST, url + body.toString()), request, invalidateCache) : request;
   }
 
-  public getHasTestersAccess(userId: string, useCache: boolean = true, invalidateCache: boolean = false): Observable<any> {
-    let url: string = `${this.diagnosticApi}api/graph/hasTestersAccess/${userId}`;
+  public getHasTestersAccess(useCache: boolean = true, invalidateCache: boolean = false): Observable<any> {
+    let url: string = `${this.diagnosticApi}api/hasTestersAccess`;
     let request = this._httpClient.get(url, {
       headers: this._getHeaders()
     });

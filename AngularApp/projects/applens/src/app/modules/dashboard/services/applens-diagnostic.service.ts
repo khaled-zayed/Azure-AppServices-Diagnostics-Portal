@@ -80,8 +80,8 @@ export class ApplensDiagnosticService {
     return this._diagnosticApi.getUserInfo(userId);
   }
 
-  getHasTestersAccess(userId: string = ""): Observable<any> {
-    return this._diagnosticApi.getHasTestersAccess(userId);
+  getHasTestersAccess(): Observable<any> {
+    return this._diagnosticApi.getHasTestersAccess();
   }
 
   getCompilerResponse(body: any, isSystemInvoker: boolean, detectorId: string = '', startTime: string = '', endTime: string = '', dataSource: string = '', timeRange: string = '', additionalParams: any): Observable<QueryResponse<DetectorResponse>> {
