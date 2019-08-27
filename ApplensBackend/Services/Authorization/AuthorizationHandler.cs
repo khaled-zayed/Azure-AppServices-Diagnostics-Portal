@@ -59,11 +59,12 @@ namespace AppLensV3.Authorization
         public SecurityGroupHandler(IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
         {
             loggedInUsersCache = new Dictionary<string, Dictionary<string, long>>();
-            var securityGroups = new List<SecurityGroupConfig>();
-            configuration.Bind("SecurityGroups", securityGroups);
-            foreach (var securityGroup in securityGroups){
-                loggedInUsersCache.Add(securityGroup.GroupId, new Dictionary<string, long>());
-            }
+            var applensAccess = new SecurityGroupConfig();
+            var applensTesters = new SecurityGroupConfig();
+            configuration.Bind("ApplensAccess", applensAccess);
+            configuration.Bind("ApplensTesters", applensTesters);
+            loggedInUsersCache.Add(applensAccess.GroupId, new Dictionary<string, long>());
+            loggedInUsersCache.Add(applensTesters.GroupId, new Dictionary<string, long>());
 
             ClearLoggedInUserCache();
             _httpContextAccessor = httpContextAccessor;
@@ -239,7 +240,7 @@ namespace AppLensV3.Authorization
             response?.OnStarting(async () =>
             {
                 filterContext.HttpContext.Response.StatusCode = 403;
-                byte[] message = Encoding.ASCII.GetBytes("User is not an authorized memeber of " + requirement.SecurityGroupName + " group.");
+                byte[] message = Encoding.ASCII.GetBytes("User is not an authorized member of " + requirement.SecurityGroupName + " group.");
                 await response.Body.WriteAsync(message, 0, message.Length);
             });
             context.Fail();

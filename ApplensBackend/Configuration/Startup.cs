@@ -80,13 +80,17 @@ namespace AppLensV3
                 Configuration.Bind("AzureAd", options);
             });
             services.AddAuthorization(options => {
-                var securityGroups = new List<SecurityGroupConfig>();
-                Configuration.Bind("SecurityGroups", securityGroups);
+                var applensAccess = new SecurityGroupConfig();
+                var applensTesters = new SecurityGroupConfig();
+                Configuration.Bind("ApplensAccess", applensAccess);
+                Configuration.Bind("ApplensTesters", applensTesters);
 
-                foreach (var securityGroup in securityGroups)
-                    options.AddPolicy(securityGroup.GroupName, policy => {
-                        policy.Requirements.Add(new SecurityGroupRequirement(securityGroup.GroupName, securityGroup.GroupId));
-                    });
+                options.AddPolicy(applensAccess.GroupName, policy => {
+                   policy.Requirements.Add(new SecurityGroupRequirement(applensAccess.GroupName, applensAccess.GroupId));
+                });
+                options.AddPolicy(applensTesters.GroupName, policy => {
+                    policy.Requirements.Add(new SecurityGroupRequirement(applensTesters.GroupName, applensTesters.GroupId));
+                });
             });
 
             services.AddSingleton<IAuthorizationHandler, SecurityGroupHandler>();
