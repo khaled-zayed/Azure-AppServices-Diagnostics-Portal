@@ -13,7 +13,7 @@ namespace AppLensV3.Controllers
 {
     [Produces("application/json")]
     [Route("api/casecleansing")]
-    [Authorize]
+    [Authorize(Policy = "ApplensAccess")]
     public class CaseCleansingController : Controller
     {
         public class CaseSimple

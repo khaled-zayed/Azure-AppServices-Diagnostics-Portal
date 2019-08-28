@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace AppLensV3.Controllers
 {
     [Route("api")]
-    [Authorize]
+    [Authorize(Policy = "ApplensAccess")]
     public class SupportTopicController: ControllerBase
     {
         private readonly ISupportTopicService _supportTopicService;

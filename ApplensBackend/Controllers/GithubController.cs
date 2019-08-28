@@ -16,7 +16,7 @@ namespace AppLensV3.Controllers
     /// </summary>
     [Produces("application/json")]
     [Route("api/github")]
-    [Authorize]
+    [Authorize(Policy = "ApplensAccess")]
     public class GithubController : Controller
     {
         /// <summary>

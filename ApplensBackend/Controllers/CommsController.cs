@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace AppLensV3
 {
     [Route("api")]
-    [Authorize]
+    [Authorize(Policy = "ApplensAccess")]
     public class CommsController : Controller
     {
         private readonly IOutageCommunicationService _outageService;

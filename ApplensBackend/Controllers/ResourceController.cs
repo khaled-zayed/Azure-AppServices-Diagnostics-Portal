@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace AppLensV3
 {
-    [Authorize]
+    [Authorize(Policy = "ApplensAccess")]
     public class ResourceController : Controller
     {
         IObserverClientService _observerService;

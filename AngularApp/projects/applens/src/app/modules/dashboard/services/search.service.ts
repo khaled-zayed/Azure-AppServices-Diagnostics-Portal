@@ -18,9 +18,7 @@ export class SearchService {
     
     constructor(private _applensDiagnosticService: ApplensDiagnosticService, private _adalService: AdalService){
         if(environment.adal.enabled){
-            let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
-            let userId = alias.replace('@microsoft.com', '').toLowerCase();
-            let hasTestersAccess = this._applensDiagnosticService.getHasTestersAccess(userId).pipe(map((res) => res), catchError(e => of(false)));
+            let hasTestersAccess = this._applensDiagnosticService.getHasTestersAccess().pipe(map((res) => res), catchError(e => of(false)));
             let isEnabledForProductId = this._applensDiagnosticService.getSearchEnabledForProductId().pipe(map((res) => res), catchError(e => of(false)));
             forkJoin([hasTestersAccess, isEnabledForProductId]).subscribe(enabledFlags => {
                 this.searchIsEnabled = enabledFlags[0] && enabledFlags[1];

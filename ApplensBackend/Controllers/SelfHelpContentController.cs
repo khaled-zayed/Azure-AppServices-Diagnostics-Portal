@@ -15,7 +15,7 @@ using Microsoft.Extensions.Caching.Memory;
 namespace AppLensV3.Controllers
 {
     [Route("api/selfhelp/")]
-    [Authorize]
+    [Authorize(Policy = "ApplensAccess")]
     public class SelfHelpContentController : Controller
     {
         private IMemoryCache _cache;

@@ -24,7 +24,7 @@ namespace AppLensV3.Controllers
     /// Diagnostic controller.
     /// </summary>
     [Route("api")]
-    [Authorize]
+    [Authorize(Policy = "ApplensAccess")]
     public class DiagnosticController : Controller
     {
         /// <summary>
@@ -45,6 +45,12 @@ namespace AppLensV3.Controllers
         private IEmailNotificationService EmailNotificationService { get; }
 
         private IHostingEnvironment Env { get; }
+
+        [HttpGet("ping")]
+        public IActionResult Ping()
+        {
+            return new OkResult();
+        }
 
         /// <summary>
         /// Action for invoke request.

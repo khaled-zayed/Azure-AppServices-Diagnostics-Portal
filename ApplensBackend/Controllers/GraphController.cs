@@ -15,7 +15,7 @@ using Microsoft.Extensions.Caching.Memory;
 namespace AppLensV3.Controllers
 {
     [Route("api/graph/")]
-    [Authorize]
+    [Authorize(Policy = "ApplensAccess")]
     public class GraphController : Controller
     {
         private readonly IGraphClientService _graphClientService;
@@ -63,30 +63,6 @@ namespace AppLensV3.Controllers
 
             var response = await _graphClientService.GetUserInfoAsync(userId);
             return Ok(response);
-        }
-
-        [HttpGet("hasApplensAccess/{userId}")]
-        [HttpOptions("hasApplensAccess/{userId}")]
-        public IActionResult CheckApplensAccess(string userId){
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return BadRequest("userId cannot be empty");
-            }
-
-            //Will add the logic to check SG once admin consent is approved to read directory
-            return Ok(true);
-        }
-
-        [HttpGet("hasTestersAccess/{userId}")]
-        [HttpOptions("hasTestersAccess/{userId}")]
-        public IActionResult CheckTestersAccess(string userId){
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return BadRequest("userId cannot be empty");
-            }
-
-            //Will add the logic to check SG once admin consent is approved to read directory
-            return Ok(_graphClientService.CheckSecurityGroup(userId));
         }
     }
 }
