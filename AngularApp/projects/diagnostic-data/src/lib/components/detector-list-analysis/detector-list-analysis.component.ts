@@ -11,7 +11,7 @@ import { Solution } from '../solution/solution';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin as observableForkJoin, Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { DetectorResponse, DetectorMetaData, HealthStatus } from '../../models/detector';
+import { DetectorResponse, DetectorMetaData, HealthStatus, DetectorType } from '../../models/detector';
 import { Insight, InsightUtils } from '../../models/insight';
 import { DataTableResponseColumn, DataTableResponseObject, DiagnosticData, RenderingType, Rendering, TimeSeriesType, TimeSeriesRendering } from '../../models/detector';
 import { DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig } from '../../config/diagnostic-data-config';
@@ -62,6 +62,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
   endTime: Moment;
   renderingProperties: Rendering;
   isPublic: boolean;
+  showAppInsightsSection: boolean = true;
   isAppInsightsEnabled: boolean = false;
   appInsightQueryMetaDataList: AppInsightQueryMetadata[] = [];
   appInsightDataList: AppInsightData[] = [];
@@ -89,6 +90,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
 
   @Input()
   withinDiagnoseAndSolve: boolean = false;
+  searchTerm: string = "";
 
   ngOnInit() {
     this._detectorControl.update.subscribe(isValidUpdate => {
@@ -96,7 +98,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
         this.refresh();
       }
     });
-
+    
     this.startTime = this._detectorControl.startTime;
     this.endTime = this._detectorControl.endTime;
   }
@@ -170,96 +172,138 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     this._activatedRoute.paramMap.subscribe(params => {
       this.analysisId = params.get('analysisId');
       this.detectorId = params.get(this.detectorParmName) === null ? "" : params.get(this.detectorParmName);
+      this.searchTerm = decodeURIComponent(params.get('searchTerm') === null ? "" : params.get('searchTerm'));
+      console.log(`SearchTerm: ${this.searchTerm}`);
       this.resetGlobals();
 
-      // Add application insights analysis data
-      this._diagnosticService.getDetector(this.analysisId, this._detectorControl.startTimeString, this._detectorControl.endTimeString)
-        .subscribe((response: DetectorResponse) => {
-          this.getApplicationInsightsData(response);
-        });
-
-      this._diagnosticService.getDetectors().subscribe(detectorList => {
-        if (detectorList) {
-
-          if (this.detectorId !== "") {
-            let currentDetector = detectorList.find(detector => detector.id == this.detectorId)
-            this.detectorName = currentDetector.name;
-            return;
-          } else {
-            this.detectorEventProperties = {
-              'StartTime': String(this._detectorControl.startTime),
-              'EndTime': String(this._detectorControl.endTime),
-              'DetectorId': this.analysisId,
-              'ParentDetectorId': "",
-              'Url': window.location.href
-            };
+      if (this.searchTerm && this.searchTerm.length>0){
+        this.showAppInsightsSection = false;
+        let searchTask = this._diagnosticService.getDetectorsSearch(this.searchTerm).pipe(map((res) => res), catchError(e => of([])));
+        let detectorsTask = this._diagnosticService.getDetectors().pipe(map((res)=> res), catchError(e => of([])));
+        observableForkJoin([searchTask, detectorsTask]).subscribe(results => {
+          var searchResults = results[0];
+          var detectorList = results[1];
+          if (detectorList){
+            searchResults.forEach(result => {
+              if (result.type === DetectorType.Detector){
+                this.insertInDetectorArray({name: result.name, id: result.id, score: result.score});
+                //this.insertInDetectorArray({name: "CheckBackupFailures", id: "backupFailures", score: result.score});
+              }
+              else if (result.type === DetectorType.Analysis){
+                this.insertInDetectorArray({name: result.name, id: result.id, score: result.score});
+                /*var childList = this.getChildrenOfAnalysis(result.id, detectorList);
+                childList.forEach((child: DetectorMetaData) => {
+                  this.insertInDetectorArray({name: child.name, id: child.id, score: result.score});
+                });*/
+              }
+            });
+            this.addDetectorData(detectorList);
           }
-
-          detectorList.forEach(element => {
-
-            if (element.analysisTypes != null && element.analysisTypes.length > 0) {
-              element.analysisTypes.forEach(analysis => {
-                if (analysis === this.analysisId) {
-                  this.detectors.push({ name: element.name, id: element.id });
-                  this.loadingMessages.push("Checking " + element.name);
-                }
-              });
+        });        
+      }
+      else{
+        // Add application insights analysis data
+        this._diagnosticService.getDetector(this.analysisId, this._detectorControl.startTimeString, this._detectorControl.endTimeString)
+          .subscribe((response: DetectorResponse) => {
+            this.getApplicationInsightsData(response);
+          });
+        
+        this._diagnosticService.getDetectors().subscribe(detectorList => {
+          if (detectorList) {
+    
+            if (this.detectorId !== "") {
+              let currentDetector = detectorList.find(detector => detector.id == this.detectorId)
+              this.detectorName = currentDetector.name;
+              return;
+            } else {
+              this.detectorEventProperties = {
+                'StartTime': String(this._detectorControl.startTime),
+                'EndTime': String(this._detectorControl.endTime),
+                'DetectorId': this.analysisId,
+                'ParentDetectorId': "",
+                'Url': window.location.href
+              };
             }
-          });
-
-          this.detectorMetaData = detectorList.filter(detector => this.detectors.findIndex(d => d.id === detector.id) >= 0);
-          this.detectorViewModels = this.detectorMetaData.map(detector => this.getDetectorViewModel(detector));
-          this.issueDetectedViewModels = [];
-
-          const requests: Observable<any>[] = [];
-          if (this.detectorViewModels.length > 0) {
-            this.loadingChildDetectors = true;
-            this.startLoadingMessage();
-          }
-          this.detectorViewModels.forEach((metaData, index) => {
-
-            requests.push((<Observable<DetectorResponse>>metaData.request).pipe(
-              map((response: DetectorResponse) => {
-                this.detectorViewModels[index] = this.updateDetectorViewModelSuccess(metaData, response);
-
-                if (this.detectorViewModels[index].loadingStatus !== LoadingStatus.Failed) {
-                  if (this.detectorViewModels[index].status === HealthStatus.Critical || this.detectorViewModels[index].status === HealthStatus.Warning) {
-                    let insight = this.getDetectorInsight(this.detectorViewModels[index]);
-                    let issueDetectedViewModel = { model: this.detectorViewModels[index], insightTitle: insight.title, insightDescription: insight.description };
-                    this.issueDetectedViewModels.push(issueDetectedViewModel);
-                    this.issueDetectedViewModels = this.issueDetectedViewModels.sort((n1, n2) => n1.model.status - n2.model.status);
-                  } else {
-                    let insight = this.getDetectorInsight(this.detectorViewModels[index]);
-                    let successViewModel = { model: this.detectorViewModels[index], insightTitle: insight.title, insightDescription: insight.description };
-                    this.successfulViewModels.push(successViewModel);
+    
+            detectorList.forEach(element => {
+    
+              if (element.analysisTypes != null && element.analysisTypes.length > 0) {
+                element.analysisTypes.forEach(analysis => {
+                  if (analysis === this.analysisId) {
+                    this.detectors.push({ name: element.name, id: element.id });
+                    this.loadingMessages.push("Checking " + element.name);
                   }
-                }
+                });
+              }
+            });
 
-                return {
-                  'ChildDetectorName': this.detectorViewModels[index].title,
-                  'ChildDetectorId': this.detectorViewModels[index].metadata.id,
-                  'ChildDetectorStatus': this.detectorViewModels[index].status,
-                  'ChildDetectorLoadingStatus': this.detectorViewModels[index].loadingStatus
-                };
-              })
-              , catchError(err => {
-                this.detectorViewModels[index].loadingStatus = LoadingStatus.Failed;
-                return of({});
-              })
-            ));
-          });
-
-          // Log all the children detectors
-          observableForkJoin(requests).subscribe(childDetectorData => {
-            this.childDetectorsEventProperties['ChildDetectorsList'] = JSON.stringify(childDetectorData);
-            this.logEvent(TelemetryEventNames.ChildDetectorsSummary, this.childDetectorsEventProperties);
-          });
-
-        }
-      });
+            this.addDetectorData(detectorList);
+          }
+        });
+      }
     });
   }
 
+  addDetectorData(detectorList){
+    this.detectorMetaData = detectorList.filter(detector => this.detectors.findIndex(d => d.id === detector.id) >= 0);
+    this.detectorViewModels = this.detectorMetaData.map(detector => this.getDetectorViewModel(detector));
+    this.issueDetectedViewModels = [];
+
+    const requests: Observable<any>[] = [];
+    if (this.detectorViewModels.length > 0) {
+      this.loadingChildDetectors = true;
+      this.startLoadingMessage();
+    }
+    this.detectorViewModels.forEach((metaData, index) => {
+
+      requests.push((<Observable<DetectorResponse>>metaData.request).pipe(
+        map((response: DetectorResponse) => {
+          this.detectorViewModels[index] = this.updateDetectorViewModelSuccess(metaData, response);
+
+          if (this.detectorViewModels[index].loadingStatus !== LoadingStatus.Failed) {
+            if (this.detectorViewModels[index].status === HealthStatus.Critical || this.detectorViewModels[index].status === HealthStatus.Warning) {
+              let insight = this.getDetectorInsight(this.detectorViewModels[index]);
+              let issueDetectedViewModel = { model: this.detectorViewModels[index], insightTitle: insight.title, insightDescription: insight.description };
+              this.issueDetectedViewModels.push(issueDetectedViewModel);
+              this.issueDetectedViewModels = this.issueDetectedViewModels.sort((n1, n2) => n1.model.status - n2.model.status);
+            } else {
+              let insight = this.getDetectorInsight(this.detectorViewModels[index]);
+              let successViewModel = { model: this.detectorViewModels[index], insightTitle: insight.title, insightDescription: insight.description };
+              this.successfulViewModels.push(successViewModel);
+            }
+          }
+
+          return {
+            'ChildDetectorName': this.detectorViewModels[index].title,
+            'ChildDetectorId': this.detectorViewModels[index].metadata.id,
+            'ChildDetectorStatus': this.detectorViewModels[index].status,
+            'ChildDetectorLoadingStatus': this.detectorViewModels[index].loadingStatus
+          };
+        })
+        , catchError(err => {
+          this.detectorViewModels[index].loadingStatus = LoadingStatus.Failed;
+          return of({});
+        })
+      ));
+    });
+
+    // Log all the children detectors
+    observableForkJoin(requests).subscribe(childDetectorData => {
+      this.childDetectorsEventProperties['ChildDetectorsList'] = JSON.stringify(childDetectorData);
+      this.logEvent(TelemetryEventNames.ChildDetectorsSummary, this.childDetectorsEventProperties);
+    });
+}
+
+  getChildrenOfAnalysis(analysisId, detectorList){
+    return detectorList.filter(element => (element.analysisTypes!=null && element.analysisTypes.length>0 && element.analysisTypes.findIndex(analysisId)>=0)).map(element => {return {name: element.name, id: element.id};});
+  }
+
+  insertInDetectorArray(detectorItem){
+    if (this.detectors.findIndex(x => x.id === detectorItem.id) < 0){
+      console.log(`Adding dtector ${detectorItem.id}`);
+      this.detectors.push(detectorItem);
+    }
+  }
   getPendingDetectorCount(): number {
     let pendingCount = 0;
     this.detectorViewModels.forEach((metaData, index) => {
@@ -350,7 +394,12 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
         // Log children detectors click
         this.logEvent(TelemetryEventNames.ChildDetectorClicked, clickDetectorEventProperties);
 
-        this._router.navigate([`../../analysis/${this.analysisId}/detectors/${detectorId}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', preserveFragment: true });
+        if (this.searchTerm && this.searchTerm.length>0){
+          this._router.navigate([`../../../../analysis/${this.analysisId}/search/${encodeURIComponent(this.searchTerm)}/detectors/${detectorId}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', preserveFragment: true });
+        }
+        else{
+          this._router.navigate([`../../analysis/${this.analysisId}/detectors/${detectorId}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', preserveFragment: true });
+        }
       }
     }
 

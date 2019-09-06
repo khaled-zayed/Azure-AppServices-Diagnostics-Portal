@@ -39,6 +39,15 @@ export class LocalBackendService {
     }));
   }
 
+  public getDetectorsSearch(searchTerm): Observable<DetectorMetaData[]> {
+    const path = `v4${this.resourceId}/detectors?text=` + encodeURIComponent(searchTerm);
+
+    return this.invoke<DetectorResponse[]>(path, 'POST').pipe(map(response => {
+      var searchResults = response.map(detector => detector.metadata).sort((a,b) => {return b.score>a.score? 1: -1;});
+      return searchResults;
+    }));
+  }
+
   public getDetector(detectorName: string, startTime: string, endTime: string, refresh?: boolean, internalView?: boolean, formQueryParams?: string) {
     let path = `v4${this.resourceId}/detectors/${detectorName}?startTime=${startTime}&endTime=${endTime}`;
     if(formQueryParams != null) {

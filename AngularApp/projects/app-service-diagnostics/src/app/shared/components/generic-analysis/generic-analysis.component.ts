@@ -15,6 +15,7 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
   detectorId: string = "";
   analysisId: string = "";
   detectorName: string = "";
+  searchTerm: string = "";
 
   constructor(private _activatedRouteLocal: ActivatedRoute, private _diagnosticServiceLocal: DiagnosticService, _resourceService: ResourceService, _authServiceInstance: AuthService, _telemetryService: TelemetryService,
     _navigator: FeatureNavigationService, private _routerLocal: Router) {
@@ -25,6 +26,7 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
     this._activatedRouteLocal.paramMap.subscribe(params => {
       this.analysisId = params.get('analysisId');
       this.detectorId = params.get('detectorName') === null ? "" : params.get('detectorName');
+      this.searchTerm = params.get('searchTerm') === null ? "" : params.get('searchTerm');
 
       this._diagnosticServiceLocal.getDetectors().subscribe(detectorList => {
         if (detectorList) {
@@ -39,7 +41,12 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
   }
 
   goBackToAnalysis() {
-    this._routerLocal.navigate([`../../../${this.analysisId}`], { relativeTo: this._activatedRouteLocal, queryParamsHandling: 'merge' });
+    if (this.searchTerm){
+      this._routerLocal.navigate([`../../../../../${this.analysisId}/search/${this.searchTerm}`], { relativeTo: this._activatedRouteLocal, queryParamsHandling: 'merge' });
+    }
+    else{
+      this._routerLocal.navigate([`../../../${this.analysisId}`], { relativeTo: this._activatedRouteLocal, queryParamsHandling: 'merge' });
+    }
   }
 
 }

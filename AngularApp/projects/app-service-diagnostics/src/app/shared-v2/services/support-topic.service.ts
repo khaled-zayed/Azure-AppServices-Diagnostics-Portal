@@ -3,6 +3,7 @@ import { map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { DiagnosticService, DetectorMetaData, DetectorType } from 'diagnostic-data';
 import { Observable } from 'rxjs';
+import 'rxjs/add/observable/of';
 import { ResourceService } from './resource.service';
 
 @Injectable()
@@ -12,6 +13,20 @@ export class SupportTopicService {
 
   constructor(protected _diagnosticService: DiagnosticService, protected _webSiteService: ResourceService) {
     this.detectorTask = this._diagnosticService.getDetectors();
+  }
+
+  getPathForSearchTerm(supportTopicId: string, pesId: string, searchTerm: string){
+    //var searchTask = this._diagnosticService.getDetectorsSearch(searchTerm);
+
+    /*return searchTask.pipe(map((detectors: any[]) => {
+      let detectorPath = '';
+      const matchingDetector = detectors[0];
+      if (matchingDetector) {
+        detectorPath = `/analysis/dynamicAnalysis/search/${encodeURIComponent(searchTerm)}`;
+      }
+      return detectorPath;
+    }));*/
+    return Observable.of(`/analysis/searchResultsAnalysis/search/${encodeURIComponent(searchTerm)}`);
   }
 
   getPathForSupportTopic(supportTopicId: string, pesId: string): Observable<string> {
