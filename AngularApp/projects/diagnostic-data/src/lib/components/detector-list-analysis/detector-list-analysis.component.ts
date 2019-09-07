@@ -187,17 +187,20 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
             searchResults.forEach(result => {
               if (result.type === DetectorType.Detector){
                 this.insertInDetectorArray({name: result.name, id: result.id, score: result.score});
-                //this.insertInDetectorArray({name: "CheckBackupFailures", id: "backupFailures", score: result.score});
               }
               else if (result.type === DetectorType.Analysis){
-                this.insertInDetectorArray({name: result.name, id: result.id, score: result.score});
-                /*var childList = this.getChildrenOfAnalysis(result.id, detectorList);
-                childList.forEach((child: DetectorMetaData) => {
-                  this.insertInDetectorArray({name: child.name, id: child.id, score: result.score});
-                });*/
+                var childList = this.getChildrenOfAnalysis(result.id, detectorList);
+                if (childList && childList.length>0){
+                  childList.forEach((child: DetectorMetaData) => {
+                    this.insertInDetectorArray({name: child.name, id: child.id, score: result.score});
+                  });
+                }
+                else{
+                  this.insertInDetectorArray({name: result.name, id: result.id, score: result.score});
+                }
               }
             });
-            this.addDetectorData(detectorList);
+            this.startDetectorRendering(detectorList);
           }
         });        
       }
@@ -237,14 +240,14 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
               }
             });
 
-            this.addDetectorData(detectorList);
+            this.startDetectorRendering(detectorList);
           }
         });
       }
     });
   }
 
-  addDetectorData(detectorList){
+  startDetectorRendering(detectorList){
     this.detectorMetaData = detectorList.filter(detector => this.detectors.findIndex(d => d.id === detector.id) >= 0);
     this.detectorViewModels = this.detectorMetaData.map(detector => this.getDetectorViewModel(detector));
     this.issueDetectedViewModels = [];
@@ -295,7 +298,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
 }
 
   getChildrenOfAnalysis(analysisId, detectorList){
-    return detectorList.filter(element => (element.analysisTypes!=null && element.analysisTypes.length>0 && element.analysisTypes.findIndex(analysisId)>=0)).map(element => {return {name: element.name, id: element.id};});
+    return detectorList.filter(element => (element.analysisTypes!=null && element.analysisTypes.length>0 && element.analysisTypes.findIndex(x => x==analysisId)>=0)).map(element => {return {name: element.name, id: element.id};});
   }
 
   insertInDetectorArray(detectorItem){

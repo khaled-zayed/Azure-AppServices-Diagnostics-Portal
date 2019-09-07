@@ -1,9 +1,9 @@
 
-import { map, retry } from 'rxjs/operators';
+import { map, retry, catchError } from 'rxjs/operators';
 import { Http, Headers, Response } from '@angular/http';
 import { Injectable } from '@angular/core';
 import { ResponseMessageEnvelope } from '../models/responsemessageenvelope';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { AuthService } from '../../startup/services/auth.service';
 import { ArmService } from './arm.service';
 import { DetectorResponse, DetectorMetaData } from 'diagnostic-data';
@@ -54,6 +54,10 @@ export class GenericApiService {
                 return searchResults;
             }));
         }
+    }
+
+    public getSupportTopicsForSearchConfig(): Observable<any> {
+        return this._http.get("/assets/supportTopicConfig.json").pipe(map((res) => res), catchError(e => of(false)));
     }
 
     public getDetector(detectorName: string, startTime: string, endTime: string, refresh?: boolean, internalView?: boolean, additionalQueryParams?: string) {

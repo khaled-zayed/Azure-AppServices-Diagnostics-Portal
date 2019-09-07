@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { map, retry } from 'rxjs/operators';
+import { map, retry, catchError } from 'rxjs/operators';
 import { Http, Headers, Response } from '@angular/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
@@ -46,6 +46,10 @@ export class LocalBackendService {
       var searchResults = response.map(detector => detector.metadata).sort((a,b) => {return b.score>a.score? 1: -1;});
       return searchResults;
     }));
+  }
+
+  public getSupportTopicsForSearchConfig(): Observable<any> {
+    return this._http.get("/assets/supportTopicConfig.json").pipe(map((res) => res), catchError(e => of(false)));
   }
 
   public getDetector(detectorName: string, startTime: string, endTime: string, refresh?: boolean, internalView?: boolean, formQueryParams?: string) {

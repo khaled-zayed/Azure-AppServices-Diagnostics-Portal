@@ -15,7 +15,7 @@ export class SupportTopicRedirectComponent implements OnInit {
     private _notificationService: NotificationService) { }
 
   ngOnInit() {
-    this._supportTopicService.getPathForSearchTerm(this._activatedRoute.snapshot.queryParams.supportTopicId, this._activatedRoute.snapshot.queryParams.pesId, this._activatedRoute.snapshot.queryParams.caseSubject).subscribe(path => {
+    this._supportTopicService.getPathForSupportCaseDiagnosis(this._activatedRoute.snapshot.queryParams.supportTopicId, this._activatedRoute.snapshot.queryParams.pesId, this._activatedRoute.snapshot.queryParams.caseSubject).subscribe(path => {
       this._router.navigate([`../${path}`], { relativeTo: this._activatedRoute });
 
       this._authService.getStartupInfo().subscribe(startupInfo => {
