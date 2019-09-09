@@ -58,7 +58,7 @@ const PerformanceCommonRouteConfig: Route[] = [
             reroute: RerouteResolver
         },
         data:{
-            analysisId:'appDownAnalysis'
+            analysisId:'perfAnalysis'
         },
     },
     {
@@ -98,7 +98,7 @@ export const AvailabilityAndPerformanceCategoryRouteConfig: Route[] = [
             reroute: RerouteResolver
         },
         data:{
-            analysisId:'perfAnalysis'
+            analysisId:'appDownAnalysis'
         }      
     },
 
