@@ -1,4 +1,11 @@
-<detector-container *ngIf="!searchTerm" [detector]="analysisDetector" [isAnalysisView]="true"></detector-container>
+<detector-container *ngIf="!showSearchBar" [detector]="analysisDetector" [isAnalysisView]="true"></detector-container>
+<div *ngIf="showSearchBar" class="search-box">
+    <i class="fa fa-search search-icon"></i>
+    <input placeholder="Describe your problem and hit enter" class="search-input" [(ngModel)]="searchTerm" (keyup.enter)="triggerSearch()">
+    <span class="icon-err" [style.display]="searchTerm?.trim().length>0 && searchTerm?.trim().length<4? '': 'none'" title="At least 2 characters">
+        <i class="fa fa-exclamation"></i>
+    </span>
+</div>
 <detector-list-analysis withinDiagnoseAndSolve="true" detectorParmName="detectorName"></detector-list-analysis>
 
 <div [hidden]="detectorId === ''">

@@ -37,6 +37,10 @@ export class ResourceService {
     }
   }
 
+  public getPesId(): string{
+    return null;
+  }
+
   public get searchSuffix(): string {
     if (this._genericArmConfigService) {
       let currConfig: ArmResourceConfig = this._genericArmConfigService.getArmResourceConfig(this.resource.id);

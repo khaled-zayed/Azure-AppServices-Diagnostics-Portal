@@ -16,6 +16,7 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
   analysisId: string = "";
   detectorName: string = "";
   searchTerm: string = "";
+  showSearchBar: boolean = false;
 
   constructor(private _activatedRouteLocal: ActivatedRoute, private _diagnosticServiceLocal: DiagnosticService, _resourceService: ResourceService, _authServiceInstance: AuthService, _telemetryService: TelemetryService,
     _navigator: FeatureNavigationService, private _routerLocal: Router) {
@@ -26,23 +27,34 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
     this._activatedRouteLocal.paramMap.subscribe(params => {
       this.analysisId = params.get('analysisId');
       this.detectorId = params.get('detectorName') === null ? "" : params.get('detectorName');
-      this.searchTerm = params.get('searchTerm') === null ? "" : params.get('searchTerm');
-
-      this._diagnosticServiceLocal.getDetectors().subscribe(detectorList => {
-        if (detectorList) {
-
-          if (this.detectorId !== "") {
-            let currentDetector = detectorList.find(detector => detector.id == this.detectorId)
-            this.detectorName = currentDetector.name;
-          }
+      this._activatedRouteLocal.queryParamMap.subscribe(qParams => {
+        this.searchTerm = qParams.get('searchTerm') === null ? "" : qParams.get('searchTerm');
+        if (this.searchTerm && this.searchTerm.length>0){
+          this.showSearchBar = true;
         }
+
+        this._diagnosticServiceLocal.getDetectors().subscribe(detectorList => {
+          if (detectorList) {
+
+            if (this.detectorId !== "") {
+              let currentDetector = detectorList.find(detector => detector.id == this.detectorId)
+              this.detectorName = currentDetector.name;
+            }
+          }
+        });
       });
     });
   }
 
+  triggerSearch(){
+    if (this.searchTerm) {
+      this._routerLocal.navigate([`../../${this.analysisId}/search`], { relativeTo: this._activatedRouteLocal, queryParamsHandling: 'merge', queryParams: {searchTerm: this.searchTerm} });
+    }
+  }
+
   goBackToAnalysis() {
     if (this.searchTerm){
-      this._routerLocal.navigate([`../../../../../${this.analysisId}/search/${this.searchTerm}`], { relativeTo: this._activatedRouteLocal, queryParamsHandling: 'merge' });
+      this._routerLocal.navigate([`../../../../${this.analysisId}/search`], { relativeTo: this._activatedRouteLocal, queryParamsHandling: 'merge', queryParams: {searchTerm: this.searchTerm} });
     }
     else{
       this._routerLocal.navigate([`../../../${this.analysisId}`], { relativeTo: this._activatedRouteLocal, queryParamsHandling: 'merge' });

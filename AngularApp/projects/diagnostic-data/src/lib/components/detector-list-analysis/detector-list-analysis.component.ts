@@ -18,6 +18,7 @@ import { DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig } from '../../config/diagn
 import { AppInsightsQueryService } from '../../services/appinsights.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { AppInsightQueryMetadata, AppInsightData, BladeInfo } from '../../models/app-insights';
+import {SupportTopicService} from '../../../../../app-service-diagnostics/src/app/shared-v2/services/support-topic.service';
 
 @Component({
   selector: 'detector-list-analysis',
@@ -69,10 +70,11 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
   diagnosticDataSet: DiagnosticData[] = [];
   loadingAppInsightsResource: boolean = true;
   loadingAppInsightsQueryData: boolean = true;
+  supportDocumentContent: string = "";
 
   constructor(private _activatedRoute: ActivatedRoute, private _router: Router,
     private _diagnosticService: DiagnosticService, private _detectorControl: DetectorControlService,
-    protected telemetryService: TelemetryService, public _appInsightsService: AppInsightsQueryService,
+    protected telemetryService: TelemetryService, public _appInsightsService: AppInsightsQueryService, private _supportTopicService: SupportTopicService,
     @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig) {
     super(telemetryService);
     this.isPublic = config && config.isPublic;
@@ -91,6 +93,15 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
   @Input()
   withinDiagnoseAndSolve: boolean = false;
   searchTerm: string = "";
+
+  scrollTo(elId: string){
+    var el = document.getElementById(elId);
+    el.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+      inline: "nearest"
+    });
+  }
 
   ngOnInit() {
     this._detectorControl.update.subscribe(isValidUpdate => {
@@ -172,78 +183,85 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     this._activatedRoute.paramMap.subscribe(params => {
       this.analysisId = params.get('analysisId');
       this.detectorId = params.get(this.detectorParmName) === null ? "" : params.get(this.detectorParmName);
-      this.searchTerm = decodeURIComponent(params.get('searchTerm') === null ? "" : params.get('searchTerm'));
-      console.log(`SearchTerm: ${this.searchTerm}`);
-      this.resetGlobals();
+      this._activatedRoute.queryParamMap.subscribe(qParams => {
+        this.searchTerm = qParams.get('searchTerm') === null ? "" : qParams.get('searchTerm');
+        console.log(`SearchTerm: ${this.searchTerm}`);
+        this.resetGlobals();
 
-      if (this.searchTerm && this.searchTerm.length>0){
-        this.showAppInsightsSection = false;
-        let searchTask = this._diagnosticService.getDetectorsSearch(this.searchTerm).pipe(map((res) => res), catchError(e => of([])));
-        let detectorsTask = this._diagnosticService.getDetectors().pipe(map((res)=> res), catchError(e => of([])));
-        observableForkJoin([searchTask, detectorsTask]).subscribe(results => {
-          var searchResults = results[0];
-          var detectorList = results[1];
-          if (detectorList){
-            searchResults.forEach(result => {
-              if (result.type === DetectorType.Detector){
-                this.insertInDetectorArray({name: result.name, id: result.id, score: result.score});
-              }
-              else if (result.type === DetectorType.Analysis){
-                var childList = this.getChildrenOfAnalysis(result.id, detectorList);
-                if (childList && childList.length>0){
-                  childList.forEach((child: DetectorMetaData) => {
-                    this.insertInDetectorArray({name: child.name, id: child.id, score: result.score});
-                  });
-                }
-                else{
+        if (this.searchTerm && this.searchTerm.length>0){
+          this._supportTopicService.getSelfHelpContentDocument().subscribe(res => {
+            if (res && res.json() && res.json().length>0){
+              this.supportDocumentContent = res.json()[0]["htmlContent"];
+            }
+          });
+          this.showAppInsightsSection = false;
+          let searchTask = this._diagnosticService.getDetectorsSearch(this.searchTerm).pipe(map((res) => res), catchError(e => of([])));
+          let detectorsTask = this._diagnosticService.getDetectors().pipe(map((res)=> res), catchError(e => of([])));
+          observableForkJoin([searchTask, detectorsTask]).subscribe(results => {
+            var searchResults: DetectorMetaData[] = results[0];
+            var detectorList = results[1];
+            if (detectorList){
+              searchResults.forEach(result => {
+                if (result.type === DetectorType.Detector){
                   this.insertInDetectorArray({name: result.name, id: result.id, score: result.score});
                 }
-              }
-            });
-            this.startDetectorRendering(detectorList);
-          }
-        });        
-      }
-      else{
-        // Add application insights analysis data
-        this._diagnosticService.getDetector(this.analysisId, this._detectorControl.startTimeString, this._detectorControl.endTimeString)
-          .subscribe((response: DetectorResponse) => {
-            this.getApplicationInsightsData(response);
-          });
-        
-        this._diagnosticService.getDetectors().subscribe(detectorList => {
-          if (detectorList) {
-    
-            if (this.detectorId !== "") {
-              let currentDetector = detectorList.find(detector => detector.id == this.detectorId)
-              this.detectorName = currentDetector.name;
-              return;
-            } else {
-              this.detectorEventProperties = {
-                'StartTime': String(this._detectorControl.startTime),
-                'EndTime': String(this._detectorControl.endTime),
-                'DetectorId': this.analysisId,
-                'ParentDetectorId': "",
-                'Url': window.location.href
-              };
-            }
-    
-            detectorList.forEach(element => {
-    
-              if (element.analysisTypes != null && element.analysisTypes.length > 0) {
-                element.analysisTypes.forEach(analysis => {
-                  if (analysis === this.analysisId) {
-                    this.detectors.push({ name: element.name, id: element.id });
-                    this.loadingMessages.push("Checking " + element.name);
+                else if (result.type === DetectorType.Analysis){
+                  var childList = this.getChildrenOfAnalysis(result.id, detectorList);
+                  if (childList && childList.length>0){
+                    childList.forEach((child: DetectorMetaData) => {
+                      this.insertInDetectorArray({name: child.name, id: child.id, score: result.score});
+                    });
                   }
-                });
-              }
+                  else{
+                    this.insertInDetectorArray({name: result.name, id: result.id, score: result.score});
+                  }
+                }
+              });
+              this.startDetectorRendering(detectorList);
+            }
+          });        
+        }
+        else{
+          // Add application insights analysis data
+          this._diagnosticService.getDetector(this.analysisId, this._detectorControl.startTimeString, this._detectorControl.endTimeString)
+            .subscribe((response: DetectorResponse) => {
+              this.getApplicationInsightsData(response);
             });
+          
+          this._diagnosticService.getDetectors().subscribe(detectorList => {
+            if (detectorList) {
+      
+              if (this.detectorId !== "") {
+                let currentDetector = detectorList.find(detector => detector.id == this.detectorId)
+                this.detectorName = currentDetector.name;
+                return;
+              } else {
+                this.detectorEventProperties = {
+                  'StartTime': String(this._detectorControl.startTime),
+                  'EndTime': String(this._detectorControl.endTime),
+                  'DetectorId': this.analysisId,
+                  'ParentDetectorId': "",
+                  'Url': window.location.href
+                };
+              }
+      
+              detectorList.forEach(element => {
+      
+                if (element.analysisTypes != null && element.analysisTypes.length > 0) {
+                  element.analysisTypes.forEach(analysis => {
+                    if (analysis === this.analysisId) {
+                      this.detectors.push({ name: element.name, id: element.id });
+                      this.loadingMessages.push("Checking " + element.name);
+                    }
+                  });
+                }
+              });
 
-            this.startDetectorRendering(detectorList);
-          }
-        });
-      }
+              this.startDetectorRendering(detectorList);
+            }
+          });
+        }
+      });
     });
   }
 
@@ -397,8 +415,8 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
         // Log children detectors click
         this.logEvent(TelemetryEventNames.ChildDetectorClicked, clickDetectorEventProperties);
 
-        if (this.searchTerm && this.searchTerm.length>0){
-          this._router.navigate([`../../../../analysis/${this.analysisId}/search/${encodeURIComponent(this.searchTerm)}/detectors/${detectorId}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', preserveFragment: true });
+        if (this.searchTerm && this.searchTerm.length>0){          
+          this._router.navigate([`../../../analysis/${this.analysisId}/search/detectors/${detectorId}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', preserveFragment: true, queryParams: {searchTerm: this.searchTerm} });
         }
         else{
           this._router.navigate([`../../analysis/${this.analysisId}/detectors/${detectorId}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', preserveFragment: true });

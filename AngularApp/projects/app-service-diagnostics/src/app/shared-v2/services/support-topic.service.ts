@@ -1,24 +1,50 @@
 
 import { map, flatMap } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
+import { Http, Headers } from '@angular/http';
 import { DiagnosticService, DetectorMetaData, DetectorType } from 'diagnostic-data';
 import { Observable } from 'rxjs';
 import 'rxjs/add/observable/of';
 import { ResourceService } from './resource.service';
+import {AuthService} from '../../startup/services/auth.service';
 
 @Injectable()
 export class SupportTopicService {
 
   protected detectorTask: Observable<DetectorMetaData[]>;
+  public supportTopicId: string = "";
+  public pesId: string = "";
+  private selfHelpContentUrl = "https://mpac.support.ext.azure.com/api/v1/selfHelpArticles?articleTypes=Generic&articleTypes=Resource";
 
-  constructor(protected _diagnosticService: DiagnosticService, protected _webSiteService: ResourceService) {
+  constructor(protected _http: Http, protected _authService: AuthService, protected _diagnosticService: DiagnosticService, protected _webSiteService: ResourceService) {
     this.detectorTask = this._diagnosticService.getDetectors();
   }
 
-  getPathForSupportCaseDiagnosis(supportTopicId: string, pesId: string, searchTerm: string): Observable<string>{
+  public getSelfHelpContentDocument(): Observable<any>{
+    if (this.pesId && this.pesId.length>0){
+      return this._authService.getStartupInfo().pipe(flatMap(res => {
+        var selfHelpContentForSupportTopicUrl = this.selfHelpContentUrl + "&productId=" + encodeURIComponent(this.pesId) + "&topicId=" + encodeURIComponent(this.supportTopicId);
+        const headers = new Headers();
+        headers.append('Authorization', `Bearer ${res.token}`);
+        return this._http.get(selfHelpContentForSupportTopicUrl, {
+          headers: headers
+        });
+      }));
+    }
+    return Observable.of(null);
+  }
+
+  getPathForSupportCaseDiagnosis(supportTopicId: string, pesId: string, searchTerm: string): Observable<any>{
+    this.supportTopicId = supportTopicId;
+    if (pesId){
+      this.pesId = pesId;
+    }
+    else{
+      this.pesId = this._webSiteService.getPesId();
+    }
     return this._diagnosticService.getSupportTopicsForSearchConfig().pipe(flatMap(res => {
       if (res.hasOwnProperty("enabledSupportTopicIdsForSearch") && res["enabledSupportTopicIdsForSearch"].findIndex(spId => spId==supportTopicId)>=0){
-        return Observable.of(`/analysis/searchResultsAnalysis/search/${encodeURIComponent(searchTerm)}`);
+        return Observable.of({path: `/analysis/searchResultsAnalysis/search`, queryParams: {"searchTerm": searchTerm}});
       }
       else{
         return this.detectorTask.pipe(flatMap(detectors => {
@@ -36,22 +62,10 @@ export class SupportTopicService {
                 detectorPath = `/analysis/${matchingDetector.id}`;
               }
             }
-          }
-    
-          return Observable.of(detectorPath);
+          }    
+          return Observable.of({path: detectorPath, queryParams: {}});
         }));
       }
     }));
-    //var searchTask = this._diagnosticService.getDetectorsSearch(searchTerm);
-
-    /*return searchTask.pipe(map((detectors: any[]) => {
-      let detectorPath = '';
-      const matchingDetector = detectors[0];
-      if (matchingDetector) {
-        detectorPath = `/analysis/dynamicAnalysis/search/${encodeURIComponent(searchTerm)}`;
-      }
-      return detectorPath;
-    }));*/
-    //return Observable.of(`/analysis/searchResultsAnalysis/search/${encodeURIComponent(searchTerm)}`);
   }
 }

@@ -93,7 +93,7 @@ export const HomeRoutes = RouterModule.forChild([
     }
   },
   {
-    path: 'analysis/:analysisId/search/:searchTerm',
+    path: 'analysis/:analysisId/search',
     component: GenericAnalysisComponent,
     data: {
       cacheComponent: true
@@ -114,7 +114,7 @@ export const HomeRoutes = RouterModule.forChild([
     }
   },
   {
-    path: 'analysis/:analysisId/search/:searchTerm/detectors/:detectorName',
+    path: 'analysis/:analysisId/search/detectors/:detectorName',
     component: GenericAnalysisComponent,
     data: {
       cacheComponent: true

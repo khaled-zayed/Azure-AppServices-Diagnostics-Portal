@@ -25,6 +25,21 @@ export class WebSitesService extends ResourceService {
         super(_armService);
     }
 
+    public getPesId(): string {
+        if (this.appType == 1 && this.platform == 1){
+            return "14748";
+        }
+        else if (this.appType == 1 && this.platform == 2){
+            return "16170";
+        }
+        else if (this.appType == 2){
+            return "16072";
+        }
+        else{
+            return null;
+        }
+    }
+
     public get searchSuffix(): string {
         return this.appType === AppType.WebApp ? this.platform === OperatingSystem.windows ? 'Azure Web App' : 'Azure Web App(Linux)' : 'Azure Function';
     }
