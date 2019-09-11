@@ -26,13 +26,13 @@ export class WebSitesService extends ResourceService {
     }
 
     public getPesId(): string {
-        if (this.appType == 1 && this.platform == 1){
+        if (this.appType == AppType.WebApp && this.platform == OperatingSystem.windows){
             return "14748";
         }
-        else if (this.appType == 1 && this.platform == 2){
+        else if (this.appType == AppType.WebApp && this.platform == OperatingSystem.linux){
             return "16170";
         }
-        else if (this.appType == 2){
+        else if (this.appType == AppType.FunctionApp){
             return "16072";
         }
         else{
