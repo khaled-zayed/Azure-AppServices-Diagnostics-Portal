@@ -43,7 +43,7 @@ export class SupportTopicService {
       this.pesId = this._webSiteService.getPesId();
     }
     return this._diagnosticService.getSupportTopicsForSearchConfig().pipe(flatMap(res => {
-      if (res.hasOwnProperty("enabledSupportTopicIdsForSearch") && res["enabledSupportTopicIdsForSearch"].findIndex(spId => spId==supportTopicId)>=0){
+      if (res.hasOwnProperty(this.pesId) && res[this.pesId].findIndex(spId => spId==supportTopicId)>=0){
         return Observable.of({path: `/analysis/searchResultsAnalysis/search`, queryParams: {"searchTerm": searchTerm}});
       }
       else{
