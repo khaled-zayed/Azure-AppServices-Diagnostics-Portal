@@ -1,7 +1,8 @@
 <detector-container *ngIf="!showSearchBar" [detector]="analysisDetector" [isAnalysisView]="true"></detector-container>
 <div *ngIf="showSearchBar" class="search-box">
-    <i class="fa fa-search search-icon"></i>
-    <input placeholder="Describe your problem and hit enter" class="search-input" [(ngModel)]="searchTerm" (keyup.enter)="triggerSearch()">
+    <span>Diagnostics based on </span>
+    <input id="caseSubmissionFlowSearchBar" placeholder="Describe your problem and hit enter" (click)="focusSearch()" class="search-input" [(ngModel)]="searchTerm" (keyup.enter)="triggerSearch()" [style.backgroundColor]="searchBarFocus? 'transparent': ''">
+    <i class="fa fa-pencil-square-o edit-icon" (click)="focusSearch()"></i>
     <span class="icon-err" [style.display]="searchTerm?.trim().length>0 && searchTerm?.trim().length<4? '': 'none'" title="At least 2 characters">
         <i class="fa fa-exclamation"></i>
     </span>

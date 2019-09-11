@@ -17,6 +17,7 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
   detectorName: string = "";
   searchTerm: string = "";
   showSearchBar: boolean = false;
+  searchBarFocus: boolean = false;
 
   constructor(private _activatedRouteLocal: ActivatedRoute, private _diagnosticServiceLocal: DiagnosticService, _resourceService: ResourceService, _authServiceInstance: AuthService, _telemetryService: TelemetryService,
     _navigator: FeatureNavigationService, private _routerLocal: Router) {
@@ -48,8 +49,17 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
 
   triggerSearch(){
     if (this.searchTerm) {
+      this.searchBarFocus = false;
+      var searchBar = document.getElementById('caseSubmissionFlowSearchBar');
+      searchBar.blur();
       this._routerLocal.navigate([`../../${this.analysisId}/search`], { relativeTo: this._activatedRouteLocal, queryParamsHandling: 'merge', queryParams: {searchTerm: this.searchTerm} });
     }
+  }
+
+  focusSearch(){
+    var searchBar = document.getElementById('caseSubmissionFlowSearchBar');
+    searchBar.focus();
+    this.searchBarFocus = true;
   }
 
   goBackToAnalysis() {

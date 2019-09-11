@@ -191,7 +191,13 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
         if (this.searchTerm && this.searchTerm.length>0){
           this._supportTopicService.getSelfHelpContentDocument().subscribe(res => {
             if (res && res.json() && res.json().length>0){
-              this.supportDocumentContent = res.json()[0]["htmlContent"];
+              var htmlContent = res.json()[0]["htmlContent"];
+              if (htmlContent){
+                var titleMask = "<h2><strong>Recommended documents</strong></h2>\n";
+                var regEx = new RegExp(titleMask, "ig");
+                htmlContent = htmlContent.replace(regEx, "");
+              }
+              this.supportDocumentContent = htmlContent;
             }
           });
           this.showAppInsightsSection = false;
