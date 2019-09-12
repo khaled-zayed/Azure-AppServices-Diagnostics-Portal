@@ -6,7 +6,7 @@ import { ResourceService } from '../../../shared-v2/services/resource.service';
 import { Observable, of } from 'rxjs';
 import { OperatingSystem } from '../../../shared/models/site';
 import { VersioningHelper } from '../../../shared/utilities/versioningHelper';
-import { Http, Headers } from '@angular/http';
+import { Http } from '@angular/http';
 import {AuthService} from '../../../startup/services/auth.service';
 
 @Injectable()
