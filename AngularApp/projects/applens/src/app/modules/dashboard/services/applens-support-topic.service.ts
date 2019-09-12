@@ -220,8 +220,12 @@ export class ApplensSupportTopicService {
         return selfHelpPath;
     }
 
+    getSelfHelpContentDocument(): Observable<any>{
+        return null;
+    }
 
-    getPathForSupportTopic(supportTopicId: string, pesId: string): Observable<string> {
+
+    getPathForSupportTopic(supportTopicId: string, pesId: string, searchTerm: string): Observable<string> {
         return this._diagnosticApiService.getDetectors().pipe(map(detectors => {
             let detectorPath = '';
 

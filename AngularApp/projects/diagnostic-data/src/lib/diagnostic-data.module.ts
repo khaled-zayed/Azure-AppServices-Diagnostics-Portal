@@ -2,6 +2,7 @@ import 'd3';
 import 'nvd3';
 import { DetectorControlService } from './services/detector-control.service';
 import { DiagnosticService } from './services/diagnostic.service';
+import { GenericSupportTopicService } from './services/generic-support-topic.service';
 import { TelemetryService } from './services/telemetry/telemetry.service';
 import { NvD3Module } from 'ng2-nvd3';
 import { MarkdownModule } from 'ngx-markdown';
@@ -125,6 +126,7 @@ export class DiagnosticDataModule {
       ngModule: DiagnosticDataModule,
       providers: [
         DiagnosticService,
+        GenericSupportTopicService,
         { provide: DIAGNOSTIC_DATA_CONFIG, useValue: config },
         KustoTelemetryService,
         AppInsightsTelemetryService,

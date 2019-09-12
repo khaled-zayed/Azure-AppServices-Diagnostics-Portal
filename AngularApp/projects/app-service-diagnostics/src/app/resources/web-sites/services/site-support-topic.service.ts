@@ -26,7 +26,7 @@ export class SiteSupportTopicService extends SupportTopicService {
     }
   }
 
-  getPathForSupportTopic(supportTopicId: string, pesId: string): Observable<string> {
+  getPathForSupportTopic(supportTopicId: string, pesId: string, searchTerm: string): Observable<string> {
     const matchingMapping = this._hardCodedSupportTopicIdMapping.find(
       supportTopic => supportTopic.supportTopicId === supportTopicId &&
         (!pesId || pesId === '' || supportTopic.pesId === pesId)
@@ -35,7 +35,7 @@ export class SiteSupportTopicService extends SupportTopicService {
     if (matchingMapping && this._webSiteService.platform == OperatingSystem.windows) {
       return of(`/legacy${matchingMapping.path}`);
     } else {
-      return super.getPathForSupportCaseDiagnosis(supportTopicId, pesId, null);
+      return super.getPathForSupportTopic(supportTopicId, pesId, searchTerm);
     }
   }
 }

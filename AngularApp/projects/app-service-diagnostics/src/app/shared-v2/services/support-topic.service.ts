@@ -34,7 +34,7 @@ export class SupportTopicService {
     return Observable.of(null);
   }
 
-  getPathForSupportCaseDiagnosis(supportTopicId: string, pesId: string, searchTerm: string): Observable<any>{
+  getPathForSupportTopic(supportTopicId: string, pesId: string, searchTerm: string): Observable<any>{
     this.supportTopicId = supportTopicId;
     if (pesId){
       this.pesId = pesId;

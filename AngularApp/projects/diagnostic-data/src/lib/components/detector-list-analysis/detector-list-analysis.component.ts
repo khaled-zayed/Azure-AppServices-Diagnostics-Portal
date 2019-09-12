@@ -18,7 +18,7 @@ import { DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig } from '../../config/diagn
 import { AppInsightsQueryService } from '../../services/appinsights.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { AppInsightQueryMetadata, AppInsightData, BladeInfo } from '../../models/app-insights';
-import {SupportTopicService} from '../../../../../app-service-diagnostics/src/app/shared-v2/services/support-topic.service';
+import {GenericSupportTopicService} from '../../services/generic-support-topic.service';
 
 @Component({
   selector: 'detector-list-analysis',
@@ -74,7 +74,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
 
   constructor(private _activatedRoute: ActivatedRoute, private _router: Router,
     private _diagnosticService: DiagnosticService, private _detectorControl: DetectorControlService,
-    protected telemetryService: TelemetryService, public _appInsightsService: AppInsightsQueryService, private _supportTopicService: SupportTopicService,
+    protected telemetryService: TelemetryService, public _appInsightsService: AppInsightsQueryService, private _supportTopicService: GenericSupportTopicService,
     @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig) {
     super(telemetryService);
     this.isPublic = config && config.isPublic;

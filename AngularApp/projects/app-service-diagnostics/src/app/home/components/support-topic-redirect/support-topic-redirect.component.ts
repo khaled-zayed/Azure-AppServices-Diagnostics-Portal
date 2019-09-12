@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SupportTopicService } from '../../../shared-v2/services/support-topic.service';
+import { GenericSupportTopicService } from 'diagnostic-data';
 import { AuthService } from '../../../startup/services/auth.service';
 import { NotificationService, Notification } from '../../../shared-v2/services/notification.service';
 
@@ -11,11 +11,11 @@ import { NotificationService, Notification } from '../../../shared-v2/services/n
 })
 export class SupportTopicRedirectComponent implements OnInit {
 
-  constructor(private _activatedRoute: ActivatedRoute, private _router: Router, private _supportTopicService: SupportTopicService, private _authService: AuthService,
+  constructor(private _activatedRoute: ActivatedRoute, private _router: Router, private _supportTopicService: GenericSupportTopicService, private _authService: AuthService,
     private _notificationService: NotificationService) { }
 
   ngOnInit() {
-    this._supportTopicService.getPathForSupportCaseDiagnosis(this._activatedRoute.snapshot.queryParams.supportTopicId, this._activatedRoute.snapshot.queryParams.pesId, this._activatedRoute.snapshot.queryParams.caseSubject).subscribe(res => {
+    this._supportTopicService.getPathForSupportTopic(this._activatedRoute.snapshot.queryParams.supportTopicId, this._activatedRoute.snapshot.queryParams.pesId, this._activatedRoute.snapshot.queryParams.caseSubject).subscribe(res => {
       this._router.navigate([`../${res.path}`], { relativeTo: this._activatedRoute, queryParams: res.queryParams });
 
       this._authService.getStartupInfo().subscribe(startupInfo => {
