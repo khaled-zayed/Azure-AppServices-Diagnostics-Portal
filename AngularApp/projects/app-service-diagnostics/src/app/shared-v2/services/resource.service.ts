@@ -37,7 +37,7 @@ export class ResourceService {
     }
   }
 
-  public getPesId(): string{
+  public getPesId(): Observable<string>{
     return null;
   }
 

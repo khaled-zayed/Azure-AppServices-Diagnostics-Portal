@@ -36,36 +36,36 @@ export class SupportTopicService {
 
   getPathForSupportTopic(supportTopicId: string, pesId: string, searchTerm: string): Observable<any>{
     this.supportTopicId = supportTopicId;
-    if (pesId){
+    console.log(`SupportTopicId ${this.supportTopicId}`);
+    return this._webSiteService.getPesId().pipe(flatMap(pesId => {
       this.pesId = pesId;
-    }
-    else{
-      this.pesId = this._webSiteService.getPesId();
-    }
-    return this._diagnosticService.getSupportTopicsForSearchConfig().pipe(flatMap(res => {
-      if (res.hasOwnProperty(this.pesId) && res[this.pesId].findIndex(spId => spId===supportTopicId)>=0){
-        return Observable.of({path: `/analysis/searchResultsAnalysis/search`, queryParams: {"searchTerm": searchTerm}});
-      }
-      else{
-        return this.detectorTask.pipe(map(detectors => {
-          let detectorPath = '';
-    
-          if (detectors) {
-            const matchingDetector = detectors.find(detector =>
-              detector.supportTopicList &&
-              detector.supportTopicList.findIndex(supportTopic => supportTopic.id === supportTopicId) >= 0);
-    
-            if (matchingDetector) {
-              if (matchingDetector.type === DetectorType.Detector) {
-                detectorPath = `/detectors/${matchingDetector.id}`;
-              } else if (matchingDetector.type === DetectorType.Analysis) {
-                detectorPath = `/analysis/${matchingDetector.id}`;
+      console.log(`PesId ${this.pesId}`)
+      return this._diagnosticService.getSupportTopicsForSearchConfig().pipe(flatMap(res => {
+        console.log(`Config ${JSON.stringify(res)}`)
+        if (res.hasOwnProperty(this.pesId) && res[this.pesId].findIndex(spId => spId===supportTopicId)>=0){
+          return Observable.of({path: `/analysis/searchResultsAnalysis/search`, queryParams: {"searchTerm": searchTerm}});
+        }
+        else{
+          return this.detectorTask.pipe(map(detectors => {
+            let detectorPath = '';
+      
+            if (detectors) {
+              const matchingDetector = detectors.find(detector =>
+                detector.supportTopicList &&
+                detector.supportTopicList.findIndex(supportTopic => supportTopic.id === supportTopicId) >= 0);
+      
+              if (matchingDetector) {
+                if (matchingDetector.type === DetectorType.Detector) {
+                  detectorPath = `/detectors/${matchingDetector.id}`;
+                } else if (matchingDetector.type === DetectorType.Analysis) {
+                  detectorPath = `/analysis/${matchingDetector.id}`;
+                }
               }
-            }
-          }    
-          return {path: detectorPath, queryParams: {}};
-        }));
-      }
+            }    
+            return {path: detectorPath, queryParams: {}};
+          }));
+        }
+      }));
     }));
   }
 }

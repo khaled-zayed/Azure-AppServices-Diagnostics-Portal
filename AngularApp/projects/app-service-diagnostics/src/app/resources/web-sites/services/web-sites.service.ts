@@ -7,6 +7,7 @@ import { ArmService } from '../../../shared/services/arm.service';
 import { Sku } from '../../../shared/models/server-farm';
 import { IDiagnosticProperties } from '../../../shared/models/diagnosticproperties';
 import { Observable, BehaviorSubject } from 'rxjs';
+import { flatMap } from 'rxjs/operators';
 
 @Injectable()
 export class WebSitesService extends ResourceService {
@@ -25,19 +26,21 @@ export class WebSitesService extends ResourceService {
         super(_armService);
     }
 
-    public getPesId(): string {
-        if (this.appType == AppType.WebApp && this.platform == OperatingSystem.windows){
-            return "14748";
-        }
-        else if (this.appType == AppType.WebApp && this.platform == OperatingSystem.linux){
-            return "16170";
-        }
-        else if (this.appType == AppType.FunctionApp){
-            return "16072";
-        }
-        else{
-            return null;
-        }
+    public getPesId(): Observable<string> {
+        return this.warmUpCallFinished.pipe(flatMap(() => {
+            if (this.appType == AppType.WebApp && this.platform == OperatingSystem.windows){
+                return Observable.of("14748");
+            }
+            else if (this.appType == AppType.WebApp && this.platform == OperatingSystem.linux){
+                return Observable.of("16170");
+            }
+            else if (this.appType == AppType.FunctionApp){
+                return Observable.of("16072");
+            }
+            else{
+                return null;
+            }
+        }))
     }
 
     public get searchSuffix(): string {
