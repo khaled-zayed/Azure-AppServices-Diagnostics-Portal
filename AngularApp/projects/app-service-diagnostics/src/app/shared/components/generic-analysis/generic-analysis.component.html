@@ -3,10 +3,8 @@
     <span>Diagnostics based on </span>
     <div class="search-input-box">
       <input id="caseSubmissionFlowSearchBar" placeholder="Describe your problem and hit enter" (click)="focusSearch()" class="search-input" [(ngModel)]="searchTerm" (keyup.enter)="triggerSearch()" [style.backgroundColor]="searchBarFocus? 'transparent': ''">
-      <i class="fa fa-pencil-square-o edit-icon" (click)="focusSearch()"></i>
-      <span class="icon-err" [style.display]="searchTerm?.trim().length>0 && searchTerm?.trim().length<4? '': 'none'" title="At least 2 characters">
-          <i class="fa fa-exclamation"></i>
-      </span>
+      <i class="fa fa-search search-icon" (click)="focusSearch()"></i>
+      <i class="fa fa-exclamation icon-err" [style.display]="searchTerm?.trim().length>0 && searchTerm?.trim().length<2? '': 'none'" title="At least 2 characters"></i>
     </div>
 </div>
 <detector-list-analysis withinDiagnoseAndSolve="true" detectorParmName="detectorName"></detector-list-analysis>

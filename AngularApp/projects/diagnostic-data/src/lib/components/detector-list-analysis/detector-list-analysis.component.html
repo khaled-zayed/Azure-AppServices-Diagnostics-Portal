@@ -1,3 +1,5 @@
+<span *ngIf="showPreLoadingError" style="margin-left:30px;margin-top:10px;">{{preLoadingErrorMessage}}</span>
+<span *ngIf="showPreLoader"><i class="fa fa-circle-o-notch fa-2x fa-spin preloading-icon"></i></span>
 <div [hidden]="detectorId !== ''">
     <div *ngIf="getPendingDetectorCount() > 0" style="margin-left:30px;margin-bottom: 30px">
         <i class="fa fa-circle-o-notch fa-2x fa-spin spin-icon" aria-hidden="true"></i>
@@ -229,7 +231,7 @@
                 </div>
             </div>
         </div>
-        <div class="list-item-wrapper" id='recommendedDocsSection'>
+        <div class="list-item-wrapper" *ngIf="isSearchAnalysisView" id='recommendedDocsSection'>
             <div class="stepper-circle stepper-circle-dark-blue">
                 <i aria-hidden="true" class="fa fa-file-text-o"></i>
             </div>

@@ -47,7 +47,7 @@ export class SupportTopicService {
         return Observable.of({path: `/analysis/searchResultsAnalysis/search`, queryParams: {"searchTerm": searchTerm}});
       }
       else{
-        return this.detectorTask.pipe(flatMap(detectors => {
+        return this.detectorTask.pipe(map(detectors => {
           let detectorPath = '';
     
           if (detectors) {
@@ -63,7 +63,7 @@ export class SupportTopicService {
               }
             }
           }    
-          return Observable.of({path: detectorPath, queryParams: {}});
+          return {path: detectorPath, queryParams: {}};
         }));
       }
     }));

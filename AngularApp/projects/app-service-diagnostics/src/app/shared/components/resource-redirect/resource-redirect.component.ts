@@ -34,7 +34,7 @@ export class ResourceRedirectComponent implements OnInit {
           };
 
           let path = 'resource/' + info.resourceId.toLowerCase();
-          var caseSubject = "";
+          var caseSubject = null;
           if (info.optionalParameters){
             var caseSubjectParam = info.optionalParameters.find(param => param.key == "caseSubject");
             if (caseSubjectParam){

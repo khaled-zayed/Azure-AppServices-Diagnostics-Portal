@@ -1,4 +1,5 @@
 import { Moment } from 'moment';
+import { v4 as uuid } from 'uuid';
 import { Component, OnInit, Input, Inject } from '@angular/core';
 import { DataRenderBaseComponent } from '../data-render-base/data-render-base.component';
 import { LoadingStatus } from '../../models/loading';
@@ -71,6 +72,12 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
   loadingAppInsightsResource: boolean = true;
   loadingAppInsightsQueryData: boolean = true;
   supportDocumentContent: string = "";
+  searchTerm: string = "";
+  searchId: string = null;
+  isSearchAnalysisView: boolean = false;
+  showPreLoader: boolean = false;
+  preLoadingErrorMessage: string = "Some error occurred while fetching diagnostics."
+  showPreLoadingError: boolean = false;
 
   constructor(private _activatedRoute: ActivatedRoute, private _router: Router,
     private _diagnosticService: DiagnosticService, private _detectorControl: DetectorControlService,
@@ -92,16 +99,6 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
 
   @Input()
   withinDiagnoseAndSolve: boolean = false;
-  searchTerm: string = "";
-
-  scrollTo(elId: string){
-    var el = document.getElementById(elId);
-    el.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-      inline: "nearest"
-    });
-  }
 
   ngOnInit() {
     this._detectorControl.update.subscribe(isValidUpdate => {
@@ -185,26 +182,35 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
       this.detectorId = params.get(this.detectorParmName) === null ? "" : params.get(this.detectorParmName);
       this._activatedRoute.queryParamMap.subscribe(qParams => {
         this.searchTerm = qParams.get('searchTerm') === null ? "" : qParams.get('searchTerm');
-        console.log(`SearchTerm: ${this.searchTerm}`);
         this.resetGlobals();
 
-        if (this.searchTerm && this.searchTerm.length>0){
+        if (this.analysisId === "searchResultsAnalysis" && this.searchTerm && this.searchTerm.length>0){
+          this.isSearchAnalysisView = true;
           this._supportTopicService.getSelfHelpContentDocument().subscribe(res => {
             if (res && res.json() && res.json().length>0){
               var htmlContent = res.json()[0]["htmlContent"];
-              if (htmlContent){
-                var titleMask = "<h2><strong>Recommended documents</strong></h2>\n";
-                var regEx = new RegExp(titleMask, "ig");
-                htmlContent = htmlContent.replace(regEx, "");
+              // Custom javascript code to remove top header from support document html string
+              var tmp = document.createElement("DIV");
+              tmp.innerHTML = htmlContent;
+              var h2s = tmp.getElementsByTagName("h2");
+              if (h2s && h2s.length>0){
+                h2s[0].remove();
               }
-              this.supportDocumentContent = htmlContent;
+
+              // Set the innter html for support document display
+              this.supportDocumentContent = tmp.innerHTML;
             }
           });
           this.showAppInsightsSection = false;
+          this.searchId = uuid();
           let searchTask = this._diagnosticService.getDetectorsSearch(this.searchTerm).pipe(map((res) => res), catchError(e => of([])));
           let detectorsTask = this._diagnosticService.getDetectors().pipe(map((res)=> res), catchError(e => of([])));
+          this.showPreLoader = true;
           observableForkJoin([searchTask, detectorsTask]).subscribe(results => {
+            this.showPreLoader = false;
+            this.showPreLoadingError = false;
             var searchResults: DetectorMetaData[] = results[0];
+            this.logEvent(TelemetryEventNames.SearchQueryResults, { searchId: this.searchId, query: this.searchTerm, results: JSON.stringify(searchResults.map((det: DetectorMetaData) => new Object({ id: det.id, score: det.score}))), ts: Math.floor((new Date()).getTime() / 1000).toString() });
             var detectorList = results[1];
             if (detectorList){
               searchResults.forEach(result => {
@@ -225,6 +231,10 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
               });
               this.startDetectorRendering(detectorList);
             }
+          },
+          (err) => {
+            this.showPreLoader = false;
+            this.showPreLoadingError = true;
           });        
         }
         else{
@@ -421,7 +431,8 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
         // Log children detectors click
         this.logEvent(TelemetryEventNames.ChildDetectorClicked, clickDetectorEventProperties);
 
-        if (this.searchTerm && this.searchTerm.length>0){          
+        if (this.analysisId==="searchResultsAnalysis" && this.searchTerm && this.searchTerm.length>0){
+          this.logEvent(TelemetryEventNames.SearchResultClicked, { searchId: this.searchId, detectorId: detectorId, rank: 0, title: clickDetectorEventProperties.ChildDetectorName, status: clickDetectorEventProperties.Status, ts: Math.floor((new Date()).getTime() / 1000).toString() });
           this._router.navigate([`../../../analysis/${this.analysisId}/search/detectors/${detectorId}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', preserveFragment: true, queryParams: {searchTerm: this.searchTerm} });
         }
         else{

@@ -30,7 +30,7 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
       this.detectorId = params.get('detectorName') === null ? "" : params.get('detectorName');
       this._activatedRouteLocal.queryParamMap.subscribe(qParams => {
         this.searchTerm = qParams.get('searchTerm') === null ? "" : qParams.get('searchTerm');
-        if (this.searchTerm && this.searchTerm.length>0){
+        if (this.analysisId=== "searchResultsAnalysis" && this.searchTerm && this.searchTerm.length>0){
           this.showSearchBar = true;
         }
 
@@ -48,7 +48,7 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
   }
 
   triggerSearch(){
-    if (this.searchTerm) {
+    if (this.searchTerm && this.searchTerm.length>1) {
       this.searchBarFocus = false;
       var searchBar = document.getElementById('caseSubmissionFlowSearchBar');
       searchBar.blur();
@@ -63,7 +63,7 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
   }
 
   goBackToAnalysis() {
-    if (this.searchTerm){
+    if (this.analysisId=== "searchResultsAnalysis" && this.searchTerm){
       this._routerLocal.navigate([`../../../../${this.analysisId}/search`], { relativeTo: this._activatedRouteLocal, queryParamsHandling: 'merge', queryParams: {searchTerm: this.searchTerm} });
     }
     else{
