@@ -91,7 +91,7 @@
                             <i class="fa fa-circle-o-notch fa-spin spin-icon" aria-hidden="true"></i>
                             <span class="loading-status">Checking Application Insights Status...</span>
                         </div>
-                        <div *ngIf="!loadingAppInsightsResource && isAppInsightsEnabled === false">
+                        <div *ngIf="!loadingAppInsightsResource && !isAppInsightsEnabled">
                             <div class="success-msg">Application insights is not enabled for your resource.
                                 <div class="loading-status-container">
                                     <div class="app-insights-disabled">
