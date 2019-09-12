@@ -337,7 +337,6 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
 
   insertInDetectorArray(detectorItem){
     if (this.detectors.findIndex(x => x.id === detectorItem.id) < 0){
-      console.log(`Adding dtector ${detectorItem.id}`);
       this.detectors.push(detectorItem);
     }
   }
