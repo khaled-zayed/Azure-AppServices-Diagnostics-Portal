@@ -1,21 +1,35 @@
+:host /deep/ .datatable-body-row.active .datatable-row-group {
+  background-color: lightgray !important;
+  color:black !important;
+}
 .group-header {
-    padding:5px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+  padding: 5px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 .expander {
-    width:40px;
+  width: 40px;
 }
 
 .group-key {
-    font-size:20px;
-    white-space: normal;
+  font-size: 20px;
+  white-space: normal;
 }
 
 .hit-count {
-    margin-right:10px;
-    font-size:16px;
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.description-text{
+    margin-top: 5px;
+    padding:5px;
+    height:150px;
+    max-height: 150px;
+    overflow-y: scroll;
+    border-radius: 0px;
+    white-space: pre-wrap;
 }

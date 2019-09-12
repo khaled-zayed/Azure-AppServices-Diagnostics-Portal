@@ -54,4 +54,15 @@ namespace AppLensV3.Helpers
         internal const string SiteResourceTypeName = "sites";
         internal const string HostingEnvironmentResourceTypeName = "hostingEnvironments";
     }
+
+    public static class HeaderConstants
+    {
+        public const string PathQueryHeader = "x-ms-path-query";
+        public const string MethodHeader = "x-ms-method";
+        public const string EmailRecipientsHeader = "x-ms-emailRecipients";
+        public const string InternalClientHeader = "x-ms-internal-client";
+        public const string InternalViewHeader = "x-ms-internal-view";
+        public const string ScriptEtagHeader = "diag-script-etag";
+        public const string VerbHeader = "x-ms-verb";
+    }
 }

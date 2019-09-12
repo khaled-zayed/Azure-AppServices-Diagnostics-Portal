@@ -13,10 +13,12 @@ using System.Threading.Tasks;
 using AppLensV3.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SendGrid.Helpers.Mail;
+using static AppLensV3.Helpers.HeaderConstants;
 
 namespace AppLensV3.Controllers
 {
@@ -27,6 +29,15 @@ namespace AppLensV3.Controllers
     [Authorize]
     public class DiagnosticController : Controller
     {
+        private class InvokeHeaders
+        {
+            public string Path { get; set; }
+            public string Method { get; set; }
+            public IEnumerable<string> DetectorAuthors { get; set; }
+            public bool InternalClient { get; set; }
+            public bool InternalView { get; set; }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DiagnosticController"/> class.
         /// </summary>
@@ -46,6 +57,9 @@ namespace AppLensV3.Controllers
 
         private IHostingEnvironment Env { get; }
 
+        private static string TryGetHeader(HttpRequest request, string headerName, string defaultValue = "") =>
+            request.Headers.ContainsKey(headerName) ? (string)request.Headers[headerName] : defaultValue;
+
         /// <summary>
         /// Action for invoke request.
         /// </summary>
@@ -55,130 +69,93 @@ namespace AppLensV3.Controllers
         [HttpOptions("invoke")]
         public async Task<IActionResult> Invoke([FromBody]JToken body)
         {
-            if (!Request.Headers.ContainsKey("x-ms-path-query"))
+            var invokeHeaders = ProcessInvokeHeaders();
+
+            if (string.IsNullOrWhiteSpace(invokeHeaders.Path))
             {
-                return BadRequest("Missing x-ms-path-query header");
+                return BadRequest($"Missing {PathQueryHeader} header");
             }
 
-            string path = Request.Headers["x-ms-path-query"];
+            var detectorId = body?["id"] != null ? body["id"].ToString() : string.Empty;
 
-            string method = HttpMethod.Get.Method;
-            if (Request.Headers.ContainsKey("x-ms-method"))
+            string applensLink = "https://applens.azurewebsites.net/" + invokeHeaders.Path.Replace("resourcegroup", "resourceGroup").Replace("diagnostics/publish", string.Empty) + "detectors/" + detectorId;
+
+            var detectorAuthorEmails = new List<EmailAddress>();
+            if (invokeHeaders.DetectorAuthors.Any())
             {
-                method = Request.Headers["x-ms-method"];
-            }
-
-            bool internalClient = true;
-            if (Request.Headers.ContainsKey("x-ms-internal-client"))
-            {
-                bool.TryParse(Request.Headers["x-ms-internal-client"], out internalClient);
-            }
-
-            bool internalView = true;
-            if (Request.Headers.ContainsKey("x-ms-internal-view"))
-            {
-                bool.TryParse(Request.Headers["x-ms-internal-view"], out internalView);
-            }
-
-            string alias = string.Empty;
-            string detectorId = string.Empty;
-            string detectorAuthor = string.Empty;
-
-            List<EmailAddress> tos = new List<EmailAddress>();
-            List<string> distinctEmailRecipientsList = new List<string>();
-
-            if (body != null && body["id"] != null)
-            {
-                detectorId = body["id"].ToString();
-            }
-
-            string applensLink = "https://applens.azurewebsites.net/" + path.Replace("resourcegroup", "resourceGroup").Replace("diagnostics/publish", "") + "detectors/" + detectorId;
-
-            if (!string.IsNullOrWhiteSpace(Request.Headers["x-ms-emailRecipients"]))
-            {
-                detectorAuthor = Request.Headers["x-ms-emailRecipients"];
-                char[] separators = { ' ', ',', ';', ':' };
-
-                // Currently there's a bug in sendgrid v3, email will not be sent if there are duplicates in the recipient list
-                // Remove duplicates before adding to the recipient list
-                string[] authors = detectorAuthor.Split(separators, StringSplitOptions.RemoveEmptyEntries).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-                foreach (var author in authors)
-                {
-                    if (string.IsNullOrWhiteSpace(alias))
-                    {
-                        alias = author;
-                    }
-
-                    string baseEmailAddressString = author.EndsWith("@microsoft.com", StringComparison.OrdinalIgnoreCase) ? author : author + "@microsoft.com" ;
-
-                    if (!distinctEmailRecipientsList.Contains(baseEmailAddressString))
-                    {
-                        EmailAddress emailAddress = new EmailAddress(baseEmailAddressString);
-                        tos.Add(emailAddress);
-                        distinctEmailRecipientsList.Add(baseEmailAddressString);
-                    }
-                }
-            }
-
-            var scriptETag = string.Empty;
-
-            if (Request.Headers.ContainsKey("diag-script-etag"))
-            {
-                scriptETag = Request.Headers["diag-script-etag"];
-            }
-
-            var assemblyName = string.Empty;
-
-            if (Request.Headers.ContainsKey("diag-assembly-name"))
-            {
-                assemblyName = Request.Headers["diag-assembly-name"];
+                detectorAuthorEmails = invokeHeaders.DetectorAuthors
+                    .Select(x => x.EndsWith("@microsoft.com") ? x : $"{x}@microsoft.com")
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Select(x => new EmailAddress(x)).ToList();
             }
 
             HttpRequestHeaders headers = new HttpRequestMessage().Headers;
-            if (!string.IsNullOrWhiteSpace(scriptETag))
+            foreach (var header in Request.Headers)
             {
-                headers.Add("diag-script-etag", scriptETag);
-            }
-
-            if (!string.IsNullOrWhiteSpace(assemblyName))
-            {
-                headers.Add("diag-assembly-name", assemblyName);
-            }
-
-            // Add all remaining headers with x-ms- or diag- prefix to request
-            var allRequestHeaders = Request.Headers.ToDictionary(header => header.Key, header => header.Value, StringComparer.OrdinalIgnoreCase);
-            foreach(var item in allRequestHeaders){
-                if ((item.Key.StartsWith("x-ms-") || item.Key.StartsWith("diag-")) && !headers.Contains(item.Key)){
-                    headers.Add(item.Key, item.Value.ToString());
-                }
-            }
-            var response = await DiagnosticClient.Execute(method, path, body?.ToString(), internalClient, internalView, headers);
-
-            if (response != null)
-            {
-                var responseString = await response.Content.ReadAsStringAsync();
-                if (response.IsSuccessStatusCode)
+                if ((header.Key.StartsWith("x-ms-") || header.Key.StartsWith("diag-")) && !headers.Contains(header.Key))
                 {
-                    var responseObject = JsonConvert.DeserializeObject(responseString);
-                    if (response.Headers.Contains("diag-script-etag"))
-                    {
-                        Request.HttpContext.Response.Headers.Add("diag-script-etag", response.Headers.GetValues("diag-script-etag").First());
-                    }
-
-                    if (path.EndsWith("/diagnostics/publish", StringComparison.OrdinalIgnoreCase) && tos.Count > 0 && Env.IsProduction())
-                    {
-                        EmailNotificationService.SendPublishingAlert(alias, detectorId, applensLink, tos);
-                    }
-
-                    return Ok(responseObject);
-                }
-                else if (response.StatusCode == HttpStatusCode.BadRequest)
-                {
-                    return BadRequest(responseString);
+                    headers.Add(header.Key, header.Value.ToString());
                 }
             }
 
-            return StatusCode((int)response.StatusCode);
+            var response = await DiagnosticClient.Execute(invokeHeaders.Method, invokeHeaders.Path, body?.ToString(), invokeHeaders.InternalClient, invokeHeaders.InternalView, headers);
+            if (response == null)
+            {
+                return StatusCode(500, "Null response from DiagnosticClient");
+            }
+
+            var responseTask = response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                return StatusCode((int)response.StatusCode, await responseTask);
+            }
+
+            if (response.Headers.Contains(ScriptEtagHeader))
+            {
+                Request.HttpContext.Response.Headers.Add(ScriptEtagHeader, response.Headers.GetValues(ScriptEtagHeader).First());
+            }
+
+            if (invokeHeaders.Path.EndsWith("/diagnostics/publish", StringComparison.OrdinalIgnoreCase) && detectorAuthorEmails.Count > 0 && Env.IsProduction())
+            {
+                EmailNotificationService.SendPublishingAlert(invokeHeaders.DetectorAuthors.Last(), detectorId, applensLink, detectorAuthorEmails);
+            }
+
+            return Ok(JsonConvert.DeserializeObject(await responseTask));
+        }
+
+        private static string GetHeaderOrDefault(IHeaderDictionary headers, string headerName, string defaultValue = "")
+        {
+            if (headers == null || headerName == null)
+            {
+                return defaultValue;
+            }
+
+            if (headers.TryGetValue(headerName, out var outValue))
+            {
+                return outValue;
+            }
+
+            return defaultValue;
+        }
+
+        private InvokeHeaders ProcessInvokeHeaders()
+        {
+            var path = GetHeaderOrDefault(Request.Headers, PathQueryHeader);
+            var method = GetHeaderOrDefault(Request.Headers, MethodHeader, HttpMethod.Get.Method);
+            var rawDetectorAuthors = GetHeaderOrDefault(Request.Headers, EmailRecipientsHeader);
+            var detectorAuthors = rawDetectorAuthors.Split(new char[] { ' ', ',', ';', ':' }, StringSplitOptions.RemoveEmptyEntries);
+
+            bool.TryParse(GetHeaderOrDefault(Request.Headers, InternalClientHeader, true.ToString()), out var internalClient);
+            bool.TryParse(GetHeaderOrDefault(Request.Headers, InternalViewHeader, true.ToString()), out var internalView);
+
+            return new InvokeHeaders()
+            {
+                Path = path,
+                Method = method,
+                DetectorAuthors = detectorAuthors,
+                InternalClient = internalClient,
+                InternalView = internalView
+            };
         }
     }
 }

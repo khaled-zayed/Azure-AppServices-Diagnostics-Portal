@@ -10,6 +10,7 @@ import { AutohealingStatuscodesRuleComponent } from './autohealing-statuscodes-r
 import { AutohealingComponent } from './autohealing.component';
 import { ProactiveAutohealingComponent } from './proactive-autohealing/proactive-autohealing.component';
 import { AvailabilityModule } from '../availability/availability.module';
+import { DiagnosticDataModule } from 'diagnostic-data';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { AvailabilityModule } from '../availability/availability.module';
   ],
   imports: [
     SharedModule,
-    AvailabilityModule
+    AvailabilityModule,
+    DiagnosticDataModule
   ],
   exports: [
     AutohealingComponent

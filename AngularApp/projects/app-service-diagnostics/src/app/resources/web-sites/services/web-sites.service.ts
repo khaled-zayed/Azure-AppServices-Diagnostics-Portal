@@ -40,7 +40,7 @@ export class WebSitesService extends ResourceService {
             else{
                 return null;
             }
-        }))
+        }));
     }
 
     public get searchSuffix(): string {

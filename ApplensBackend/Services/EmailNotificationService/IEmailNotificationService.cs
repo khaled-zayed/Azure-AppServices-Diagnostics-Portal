@@ -9,6 +9,6 @@ namespace AppLensV3.Services
 {
     public interface IEmailNotificationService
     {
-        Task SendPublishingAlert(string alias, string detectorId, string link, List<EmailAddress> tos);
+        Task SendPublishingAlert(string alias, string detectorId, string link, IEnumerable<EmailAddress> tos);
     }
 }

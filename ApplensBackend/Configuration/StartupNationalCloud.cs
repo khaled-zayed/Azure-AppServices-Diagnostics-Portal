@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using AppLensV3.Helpers;
 using AppLensV3.Services;
 using AppLensV3.Services.DiagnosticClientService;
 using Microsoft.AspNetCore.Authentication;
@@ -97,7 +98,7 @@ namespace AppLensV3.Configuration
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowAnyOrigin()
-                .WithExposedHeaders(new string[] { "diag-script-etag" }));
+                .WithExposedHeaders(new string[] { HeaderConstants.ScriptEtagHeader }));
 
             if (env.IsEnvironment("NationalCloud"))
             {

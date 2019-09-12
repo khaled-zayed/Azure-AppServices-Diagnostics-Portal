@@ -133,7 +133,11 @@ export interface Rendering {
 
 export interface DataTableRendering extends Rendering {
     groupByColumnName: string;
+    descriptionColumnName: string;
     displayColumnNames: string[];
+    tableOptions: any;
+    height:any;
+    allowColumnSearch:boolean;
 }
 
 export interface TimeSeriesRendering extends Rendering {

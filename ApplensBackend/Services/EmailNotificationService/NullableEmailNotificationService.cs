@@ -10,7 +10,7 @@ namespace AppLensV3.Services
     public class NullableEmailNotificationService : IEmailNotificationService
     {
         /// <inheritdoc/>
-        public Task SendPublishingAlert(string alias, string detectorId, string link, List<EmailAddress> tos)
+        public Task SendPublishingAlert(string alias, string detectorId, string link, IEnumerable<EmailAddress> tos)
         {
             return Task.FromResult(true);
         }
