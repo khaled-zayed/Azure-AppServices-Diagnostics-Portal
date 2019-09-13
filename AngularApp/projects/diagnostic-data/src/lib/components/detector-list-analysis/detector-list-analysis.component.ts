@@ -72,6 +72,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
   loadingAppInsightsResource: boolean = true;
   loadingAppInsightsQueryData: boolean = true;
   supportDocumentContent: string = "";
+  supportDocumentRendered: boolean = false;
   searchTerm: string = "";
   searchId: string = null;
   isSearchAnalysisView: boolean = false;
@@ -184,58 +185,63 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
         this.searchTerm = qParams.get('searchTerm') === null ? "" : qParams.get('searchTerm');
         this.resetGlobals();
 
-        if (this.analysisId === "searchResultsAnalysis" && this.searchTerm && this.searchTerm.length>0){
+        if (this.analysisId === "searchResultsAnalysis"){
           this.isSearchAnalysisView = true;
-          this._supportTopicService.getSelfHelpContentDocument().subscribe(res => {
-            if (res && res.json() && res.json().length>0){
-              var htmlContent = res.json()[0]["htmlContent"];
-              // Custom javascript code to remove top header from support document html string
-              var tmp = document.createElement("DIV");
-              tmp.innerHTML = htmlContent;
-              var h2s = tmp.getElementsByTagName("h2");
-              if (h2s && h2s.length>0){
-                h2s[0].remove();
-              }
-
-              // Set the innter html for support document display
-              this.supportDocumentContent = tmp.innerHTML;
-            }
-          });
-          this.showAppInsightsSection = false;
-          this.searchId = uuid();
-          let searchTask = this._diagnosticService.getDetectorsSearch(this.searchTerm).pipe(map((res) => res), catchError(e => of([])));
-          let detectorsTask = this._diagnosticService.getDetectors().pipe(map((res)=> res), catchError(e => of([])));
-          this.showPreLoader = true;
-          observableForkJoin([searchTask, detectorsTask]).subscribe(results => {
-            this.showPreLoader = false;
-            this.showPreLoadingError = false;
-            var searchResults: DetectorMetaData[] = results[0];
-            this.logEvent(TelemetryEventNames.SearchQueryResults, { searchId: this.searchId, query: this.searchTerm, results: JSON.stringify(searchResults.map((det: DetectorMetaData) => new Object({ id: det.id, score: det.score}))), ts: Math.floor((new Date()).getTime() / 1000).toString() });
-            var detectorList = results[1];
-            if (detectorList){
-              searchResults.forEach(result => {
-                if (result.type === DetectorType.Detector){
-                  this.insertInDetectorArray({name: result.name, id: result.id, score: result.score});
+          if (!this.supportDocumentRendered){
+            this._supportTopicService.getSelfHelpContentDocument().subscribe(res => {
+              if (res && res.json() && res.json().length>0){
+                var htmlContent = res.json()[0]["htmlContent"];
+                // Custom javascript code to remove top header from support document html string
+                var tmp = document.createElement("DIV");
+                tmp.innerHTML = htmlContent;
+                var h2s = tmp.getElementsByTagName("h2");
+                if (h2s && h2s.length>0){
+                  h2s[0].remove();
                 }
-                else if (result.type === DetectorType.Analysis){
-                  var childList = this.getChildrenOfAnalysis(result.id, detectorList);
-                  if (childList && childList.length>0){
-                    childList.forEach((child: DetectorMetaData) => {
-                      this.insertInDetectorArray({name: child.name, id: child.id, score: result.score});
-                    });
-                  }
-                  else{
+
+                // Set the innter html for support document display
+                this.supportDocumentContent = tmp.innerHTML;
+                this.supportDocumentRendered = true;
+              }
+            });
+          }
+          this.showAppInsightsSection = false;
+          if (this.searchTerm && this.searchTerm.length>1) {
+            this.searchId = uuid();
+            let searchTask = this._diagnosticService.getDetectorsSearch(this.searchTerm).pipe(map((res) => res), catchError(e => of([])));
+            let detectorsTask = this._diagnosticService.getDetectors().pipe(map((res)=> res), catchError(e => of([])));
+            this.showPreLoader = true;
+            observableForkJoin([searchTask, detectorsTask]).subscribe(results => {
+              this.showPreLoader = false;
+              this.showPreLoadingError = false;
+              var searchResults: DetectorMetaData[] = results[0];
+              this.logEvent(TelemetryEventNames.SearchQueryResults, { searchId: this.searchId, query: this.searchTerm, results: JSON.stringify(searchResults.map((det: DetectorMetaData) => new Object({ id: det.id, score: det.score}))), ts: Math.floor((new Date()).getTime() / 1000).toString() });
+              var detectorList = results[1];
+              if (detectorList){
+                searchResults.forEach(result => {
+                  if (result.type === DetectorType.Detector){
                     this.insertInDetectorArray({name: result.name, id: result.id, score: result.score});
                   }
-                }
-              });
-              this.startDetectorRendering(detectorList);
-            }
-          },
-          (err) => {
-            this.showPreLoader = false;
-            this.showPreLoadingError = true;
-          });        
+                  else if (result.type === DetectorType.Analysis){
+                    var childList = this.getChildrenOfAnalysis(result.id, detectorList);
+                    if (childList && childList.length>0){
+                      childList.forEach((child: DetectorMetaData) => {
+                        this.insertInDetectorArray({name: child.name, id: child.id, score: result.score});
+                      });
+                    }
+                    else{
+                      this.insertInDetectorArray({name: result.name, id: result.id, score: result.score});
+                    }
+                  }
+                });
+                this.startDetectorRendering(detectorList);
+              }
+            },
+            (err) => {
+              this.showPreLoader = false;
+              this.showPreLoadingError = true;
+            });
+          }        
         }
         else{
           // Add application insights analysis data
