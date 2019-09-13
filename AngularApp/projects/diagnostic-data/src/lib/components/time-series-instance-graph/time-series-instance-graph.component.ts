@@ -105,7 +105,7 @@ export class TimeSeriesInstanceGraphComponent extends DataRenderBaseComponent im
 
           const point: InstanceTablePoint = <InstanceTablePoint>{
             timestamp: timestamp,
-            value: parseFloat(row[columnIndex]),
+            value: Number(row[columnIndex]),
             counterName: column.columnName,
             instance: instance
           };

@@ -101,7 +101,7 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
         if (row[columnIndex]) {
           const point: TablePoint = <TablePoint>{
             timestamp: timestamp,
-            value: parseFloat(row[columnIndex]),
+            value: Number(row[columnIndex]),
             column: column.columnName,
             counterName: counterNameColumnIndex >= 0 ? row[counterNameColumnIndex] : null
           };
