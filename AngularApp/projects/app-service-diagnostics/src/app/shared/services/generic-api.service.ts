@@ -35,6 +35,7 @@ export class GenericApiService {
             return this.invoke<DetectorResponse[]>(path, 'POST').pipe(map(response => response.map(detector => detector.metadata)));
         } else {
             const path = `${this.resourceId}/detectors`;
+            console.log(`Get detectors call path ${path}`);
             return this._armService.getResourceCollection<DetectorResponse[]>(path).pipe(map((response: ResponseMessageEnvelope<DetectorResponse>[]) => {
                 this.detectorList = response.map(listItem => listItem.properties.metadata);
                 return this.detectorList;
