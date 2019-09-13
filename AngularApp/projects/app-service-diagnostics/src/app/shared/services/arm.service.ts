@@ -243,9 +243,11 @@ export class ArmService {
 
     getResourceCollection<T>(resourceId: string, apiVersion?: string, invalidateCache: boolean = false, queryParams: any[] = []): Observable<{} | ResponseMessageCollectionEnvelope<T>> {
         var url = `${this.armUrl}${resourceId}?api-version=${this.getApiVersion(resourceId, apiVersion)}`;
-        queryParams.forEach(param => {
-            url = url + "&" + param["key"] + "=" + encodeURIComponent(param["value"]);
-        });
+        if (queryParams && queryParams.length>0){
+            queryParams.forEach(param => {
+                url = url + "&" + param["key"] + "=" + encodeURIComponent(param["value"]);
+            });
+        }
         const request = this._http.get(url, { headers: this.getHeaders() }).pipe(
             map<ResponseMessageCollectionEnvelope<ResponseMessageEnvelope<T>>, ResponseMessageEnvelope<T>[]>(r => r.value),
             catchError(this.handleError)
