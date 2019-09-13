@@ -20,7 +20,6 @@ export class SupportTopicService {
   };
 
   constructor(protected _http: Http, protected _authService: AuthService, protected _diagnosticService: DiagnosticService, protected _webSiteService: ResourceService) {
-    this.detectorTask = this._diagnosticService.getDetectors();
   }
 
   public getSelfHelpContentDocument(): Observable<any>{
@@ -45,6 +44,7 @@ export class SupportTopicService {
           return Observable.of({path: `/analysis/searchResultsAnalysis/search`, queryParams: {"searchTerm": searchTerm}});
       }
       else{
+          this.detectorTask = this._diagnosticService.getDetectors();
           return this.detectorTask.pipe(map(detectors => {
             let detectorPath = '';
       
