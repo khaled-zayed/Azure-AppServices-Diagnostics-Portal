@@ -39,10 +39,8 @@ export class SupportTopicService {
 
   getPathForSupportTopic(supportTopicId: string, pesId: string, searchTerm: string): Observable<any>{
     this.supportTopicId = supportTopicId;
-    console.log(`SupportTopicId ${this.supportTopicId}`);
     return this._webSiteService.getPesId().pipe(flatMap(pesId => {
       this.pesId = pesId;
-      console.log(`PesId ${this.pesId}`)
       if (this.supportTopicConfig.hasOwnProperty(this.pesId) && this.supportTopicConfig[this.pesId].findIndex(spId => spId===supportTopicId)>=0){
           return Observable.of({path: `/analysis/searchResultsAnalysis/search`, queryParams: {"searchTerm": searchTerm}});
       }

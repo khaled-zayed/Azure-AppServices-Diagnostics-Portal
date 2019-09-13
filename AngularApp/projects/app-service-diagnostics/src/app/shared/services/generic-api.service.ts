@@ -48,8 +48,9 @@ export class GenericApiService {
             const path = `v4${this.resourceId}/detectors?stampName=waws-prod-bay-085&hostnames=netpractice.azurewebsites.net&text=` + encodeURIComponent(searchTerm);
             return this.invoke<DetectorResponse[]>(path, 'POST').pipe(map(response => response.map(detector => detector.metadata)));
         } else {
-            const path = `${this.resourceId}/detectors?text=` + encodeURIComponent(searchTerm);
-            return this._armService.getResourceCollection<DetectorResponse[]>(path).pipe(map((response: ResponseMessageEnvelope<DetectorResponse>[]) => {
+            const path = `${this.resourceId}/detectors`;
+            var queryParams = [{"key": "text", "value": searchTerm}];
+            return this._armService.getResourceCollection<DetectorResponse[]>(path, null, false, queryParams).pipe(map((response: ResponseMessageEnvelope<DetectorResponse>[]) => {
                 var searchResults = response.map(listItem => listItem.properties.metadata).sort((a,b) => {return b.score>a.score? 1: -1;});
                 return searchResults;
             }));
