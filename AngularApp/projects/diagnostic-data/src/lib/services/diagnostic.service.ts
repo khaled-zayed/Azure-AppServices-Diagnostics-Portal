@@ -28,10 +28,6 @@ export class DiagnosticService {
         return null;
     }
 
-    public getSupportTopicsForSearchConfig(): Observable<any> {
-        return null;
-    }
-
     getCompilerResponse(body: any, isSystemInvoker: boolean, detectorId: string = '', startTime: string = '',
             endTime: string = '', dataSource: string = '', timeRange: string = '', additionalParams?: any):
             Observable<QueryResponse<DetectorResponse>> {

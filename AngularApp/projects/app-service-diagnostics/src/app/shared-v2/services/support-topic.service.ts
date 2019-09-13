@@ -15,6 +15,9 @@ export class SupportTopicService {
   public supportTopicId: string = "";
   public pesId: string = "";
   private selfHelpContentUrl = "https://mpac.support.ext.azure.com/api/v1/selfHelpArticles?articleTypes=Generic&articleTypes=Resource";
+  private supportTopicConfig = {
+    "14748": ["32444077", "32444080", "32444081", "32444082", "32444083", "32444084", "32550703", "32542218"]
+  };
 
   constructor(protected _http: Http, protected _authService: AuthService, protected _diagnosticService: DiagnosticService, protected _webSiteService: ResourceService) {
     this.detectorTask = this._diagnosticService.getDetectors();
@@ -40,12 +43,10 @@ export class SupportTopicService {
     return this._webSiteService.getPesId().pipe(flatMap(pesId => {
       this.pesId = pesId;
       console.log(`PesId ${this.pesId}`)
-      return this._diagnosticService.getSupportTopicsForSearchConfig().pipe(flatMap(res => {
-        console.log(`Config ${JSON.stringify(res)}`)
-        if (res.hasOwnProperty(this.pesId) && res[this.pesId].findIndex(spId => spId===supportTopicId)>=0){
+      if (this.supportTopicConfig.hasOwnProperty(this.pesId) && this.supportTopicConfig[this.pesId].findIndex(spId => spId===supportTopicId)>=0){
           return Observable.of({path: `/analysis/searchResultsAnalysis/search`, queryParams: {"searchTerm": searchTerm}});
-        }
-        else{
+      }
+      else{
           return this.detectorTask.pipe(map(detectors => {
             let detectorPath = '';
       
@@ -64,8 +65,7 @@ export class SupportTopicService {
             }    
             return {path: detectorPath, queryParams: {}};
           }));
-        }
-      }));
+      }
     }));
   }
 }

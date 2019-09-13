@@ -56,10 +56,6 @@ export class GenericApiService {
         }
     }
 
-    public getSupportTopicsForSearchConfig(): Observable<any> {
-        return this._http.get("/assets/supportTopicConfig.json").pipe(map((res) => res), catchError(e => of(false)));
-    }
-
     public getDetector(detectorName: string, startTime: string, endTime: string, refresh?: boolean, internalView?: boolean, additionalQueryParams?: string) {
 
         if (this.useLocal) {
