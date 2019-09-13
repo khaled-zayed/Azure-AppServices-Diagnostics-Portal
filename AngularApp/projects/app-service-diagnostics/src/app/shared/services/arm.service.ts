@@ -248,7 +248,6 @@ export class ArmService {
                 url = url + "&" + param["key"] + "=" + encodeURIComponent(param["value"]);
             });
         }
-        console.log(`Get detectors request url ${url}`);
         const request = this._http.get(url, { headers: this.getHeaders() }).pipe(
             map<ResponseMessageCollectionEnvelope<ResponseMessageEnvelope<T>>, ResponseMessageEnvelope<T>[]>(r => r.value),
             catchError(this.handleError)
