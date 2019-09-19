@@ -10,14 +10,15 @@
 	"armApiVersion": "2019-04-01",
 	"isSearchEnabled": true,
 	"isApplicableForLiveChat": false,
-	"categories": [{
-			"id": "Customer",
-			"name": "Cluster Management",
-			"description": "Is your cluster experiencing failures or unresponsiveness? Investigate and discover issues that may cause your cluster to no longer be manageable.",
-			"keywords": ["Failures", "Node Readiness", "Node Health", "Scaling", "CRUD", "Identity"],
-			"color": "rgb(186, 211, 245)",
-			"createFlowForCategory": false,
-			"chatEnabled": false
-		}
-	]
+    "categories": [
+        {
+            "id": "Cluster Insights",
+            "name": "Cluster Insights",
+            "description": "Is your cluster experiencing failures or unresponsiveness? Investigate and discover issues that may cause your cluster to no longer be manageable.",
+            "keywords": [ "Failures", "Node Readiness", "Node Health", "Scaling", "CRUD", "Identity" ],
+            "color": "rgb(186, 211, 245)",
+            "createFlowForCategory": false,
+            "chatEnabled": false
+        }
+    ]
 }
