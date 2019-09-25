@@ -40,22 +40,18 @@ export class AadAuthGuard implements CanActivate {
                 })
                 .catch(err => 
                 {
+                    this.isAuthorized = false;
                     if (err.status == 403)
                     {
-                        this.isAuthorized = false;
                         this._router.navigate(['unauthorized']);
-                        return Observable.throw(false);
                     }
                     else if (err.status == 401){
-                        this.isAuthorized = false;
                         this._router.navigate(['tokeninvalid']);
-                        return Observable.throw(false);
                     }
                     else {
-                        this.isAuthorized = false;
                         this._router.navigate(['authRequestFailed']);
-                        return Observable.throw(false);
                     }
+                    return Observable.throw(false);
                 });
         }
     }
