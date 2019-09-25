@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using AppLensV3.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +19,31 @@ namespace AppLensV3.Configuration
         public StartupNationalCloudDevelopment(IConfiguration configuration, IHostingEnvironment env)
             : base(configuration, env)
         {
+        }
+
+        public override void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        {
+            app.UseCors(cors =>
+                cors
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowAnyOrigin()
+                .WithExposedHeaders(new string[] { HeaderConstants.ScriptEtagHeader }));
+
+            app.Use(async (context, next) =>
+            {
+                await next();
+                if (context.Response.StatusCode == 404 && !Path.HasExtension(context.Request.Path.Value) && !context.Request.Path.Value.StartsWith("/api/"))
+                {
+                    context.Request.Path = "/index.html";
+                    await next();
+                }
+            });
+
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+
+            app.UseMvc();
         }
     }
 }

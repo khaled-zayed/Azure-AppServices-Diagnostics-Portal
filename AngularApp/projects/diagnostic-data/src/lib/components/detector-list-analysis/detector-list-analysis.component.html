@@ -1,3 +1,5 @@
+<span *ngIf="showPreLoadingError" style="margin-left:30px;margin-top:10px;">{{preLoadingErrorMessage}}</span>
+<span *ngIf="showPreLoader"><i class="fa fa-circle-o-notch fa-2x fa-spin preloading-icon"></i></span>
 <div [hidden]="detectorId !== ''">
     <div *ngIf="getPendingDetectorCount() > 0" style="margin-left:30px;margin-bottom: 30px">
         <i class="fa fa-circle-o-notch fa-2x fa-spin spin-icon" aria-hidden="true"></i>
@@ -7,11 +9,11 @@
             checks completed)
         </span>
     </div>
-
+    
     <div *ngIf="detectors.length > 0 && (issueDetectedViewModels.length > 0 || successfulViewModels.length > 0) || (getPendingDetectorCount() === 0 && loadingChildDetectors)"
         class="list-wrapper">
         <div class="red-line" [ngClass]="{'remove-padding':withinDiagnoseAndSolve}"></div>
-        <div class="list-item-wrapper">
+        <div class="list-item-wrapper" *ngIf="issueDetectedViewModels.length > 0">
             <div class="stepper-circle">
                 <i aria-hidden="true" class="fa fa-search"></i>
             </div>
@@ -77,7 +79,7 @@
             </div>
         </div>
 
-        <div class="list-item-wrapper">
+        <div *ngIf="showAppInsightsSection && isAppInsightsEnabled" class="list-item-wrapper">
             <div class="stepper-circle stepper-circle-purple">
                 <img src="assets/img/appinsights.png" class="app-insights-image">
             </div>
@@ -89,7 +91,7 @@
                             <i class="fa fa-circle-o-notch fa-spin spin-icon" aria-hidden="true"></i>
                             <span class="loading-status">Checking Application Insights Status...</span>
                         </div>
-                        <div *ngIf="!loadingAppInsightsResource && isAppInsightsEnabled === false">
+                        <div *ngIf="!loadingAppInsightsResource && !isAppInsightsEnabled">
                             <div class="success-msg">Application insights is not enabled for your resource.
                                 <div class="loading-status-container">
                                     <div class="app-insights-disabled">
@@ -154,7 +156,7 @@
             </div>
         </div>
 
-        <div class="list-item-wrapper">
+        <div class="list-item-wrapper" *ngIf="allSolutions.length > 0">
             <div class="stepper-circle stepper-circle-brown">
                 <i aria-hidden="true" class="fa fa-wrench"></i>
             </div>
@@ -179,7 +181,7 @@
                 </div>
             </div>
         </div>
-        <div class="list-item-wrapper">
+        <div class="list-item-wrapper" *ngIf="successfulViewModels.length > 0">
             <div class="stepper-circle stepper-circle-green">
                 <i aria-hidden="true" class="fa fa-check"></i>
             </div>
@@ -226,6 +228,19 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="list-wrapper" *ngIf="isSearchAnalysisView">
+        <div class="list-item-wrapper" *ngIf="isSearchAnalysisView" id='recommendedDocsSection'>
+            <div class="stepper-circle stepper-circle-dark-blue">
+                <i aria-hidden="true" class="fa fa-file-text-o"></i>
+            </div>
+            <div class="list-item">
+                <div class="list-title">Recommended Docs</div>
+                <div>Documents to aid in troubleshooting</div>
+                <div class="list-text" *ngIf="supportDocumentContent.length>0" [innerHTML]="supportDocumentContent">
                 </div>
                 <div class="white-line" [ngClass]="{'remove-padding':withinDiagnoseAndSolve}"></div>
             </div>

@@ -17,8 +17,17 @@ export class TabTitleResolver implements Resolve<Observable<string>> {
         detectorId = analysisId;
       }
 
+      if (detectorId === "searchResultsAnalysis"){
+        return Observable.of("Diagnose and Solve");
+      }
+
       return this._diagnosticService.getDetectors().pipe(map(detectors => {
-        return this._diagnosticService.getDetectorById(detectorId).name;
+        if (this._diagnosticService.getDetectorById(detectorId)){
+          return this._diagnosticService.getDetectorById(detectorId).name;
+        }
+        else{
+          return "Diagnose and Solve";
+        }
       }));
     }
 

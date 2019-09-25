@@ -1,21 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
+using System.Reflection;
 using System.Threading.Tasks;
+using AppLensV3.Models;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using System.Data;
-using Newtonsoft.Json.Linq;
-using System.IO;
-using System.Reflection;
-using AppLensV3.Models;
-using System.Text.RegularExpressions;
-using System.Globalization;
-using Microsoft.AspNetCore.Hosting;
 
 namespace AppLensV3.Services
 {
@@ -85,7 +79,7 @@ namespace AppLensV3.Services
                 string filePath = Path.Combine(assemPath, staticImage.Value);
 
                 FileInfo fs = new FileInfo(filePath);
-                Byte[] imageArray = File.ReadAllBytes(fs.FullName);
+                byte[] imageArray = File.ReadAllBytes(fs.FullName);
                 string base64ImageRepresentation = Convert.ToBase64String(imageArray);
 
                 if (!string.IsNullOrWhiteSpace(base64ImageRepresentation))
@@ -127,22 +121,21 @@ namespace AppLensV3.Services
 
                         attachments.Add(imageAttachment);
                     }
-
                 }
             }
 
             return attachments;
         }
 
-        public async Task<Response> SendEmail(EmailAddress from, List<EmailAddress> tos, string templateId, Object dynamicTemplateData, List<Attachment> attachments = null, List<EmailAddress> ccList = null)
+        public async Task<Response> SendEmail(EmailAddress from, IEnumerable<EmailAddress> tos, string templateId, object dynamicTemplateData, IEnumerable<Attachment> attachments = null, IEnumerable<EmailAddress> ccList = null)
         {
             var emailMessage = new SendGridMessage();
             emailMessage.SetFrom(from);
-            emailMessage.AddTos(tos);
+            emailMessage.AddTos(tos.ToList());
 
-            if (ccList != null && ccList.Count > 0)
+            if (ccList != null && ccList.Count() > 0)
             {
-                emailMessage.AddCcs(ccList);
+                emailMessage.AddCcs(ccList.ToList());
             }
 
             emailMessage.SetTemplateId(templateId);
@@ -157,7 +150,7 @@ namespace AppLensV3.Services
             return response;
         }
 
-        public async Task SendPublishingAlert(string alias, string detectorId, string link, List<EmailAddress> tos)
+        public async Task SendPublishingAlert(string alias, string detectorId, string link, IEnumerable<EmailAddress> tos)
         {
             var fromAddress = new EmailAddress("xipeng@microsoft.com", "Cindy Peng");
             var dynamicTemplateData = new PublishingTemplateData
@@ -201,7 +194,7 @@ namespace AppLensV3.Services
                     throw new ArgumentNullException("SendGridApiKey");
                 }
 
-                if (String.IsNullOrWhiteSpace(PublishingEmailTemplateId))
+                if (string.IsNullOrWhiteSpace(PublishingEmailTemplateId))
                 {
                     throw new ArgumentNullException("PublishingEmailTemplateId");
                 }

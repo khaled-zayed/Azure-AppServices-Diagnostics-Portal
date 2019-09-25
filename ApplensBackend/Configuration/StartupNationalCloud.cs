@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using AppLensV3.Helpers;
 using AppLensV3.Services;
 using AppLensV3.Services.DiagnosticClientService;
 using Microsoft.AspNetCore.Authentication;
@@ -45,6 +46,7 @@ namespace AppLensV3.Configuration
             services.AddSingleton<IDiagnosticClientService, DiagnosticClient>();
             services.AddSingleton<IObserverClientService, DiagnosticObserverClientService>();
             services.AddSingleton<IEmailNotificationService, NullableEmailNotificationService>();
+            services.AddSingleton<IGithubClientService, GithubClientService>();
             services.AddMemoryCache();
 
             if (env.IsEnvironment("NationalCloud"))
@@ -90,59 +92,47 @@ namespace AppLensV3.Configuration
             }
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseCors(cors =>
                 cors
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowAnyOrigin()
-                .WithExposedHeaders(new string[] { "diag-script-etag" }));
+                .WithExposedHeaders(new string[] { HeaderConstants.ScriptEtagHeader }));
 
-            if (env.IsEnvironment("NationalCloud"))
+            app.UseAuthentication();
+            app.Use(async (context, next) =>
             {
-                app.UseAuthentication();
-                app.Use(async (context, next) =>
+                if (!context.User.Identity.IsAuthenticated)
                 {
-                    if (!context.User.Identity.IsAuthenticated)
+                    if (!context.Request.Path.ToString().Contains("signin"))
                     {
-                        if (!context.Request.Path.ToString().Contains("signin"))
-                        {
-                            context.Response.Redirect($"https://{context.Request.Host}/federation/signin", false);
-                        }
-                        else
-                        {
-                            //The controller is backed by auth, get auth middleware to kick in
-                            await next.Invoke();
-                        }
+                        context.Response.Redirect($"https://{context.Request.Host}/federation/signin", false);
                     }
                     else
                     {
-                        if (context.Request.Path.ToString().Contains("signin"))
-                        {
-                            context.Response.Redirect($"https://{context.Request.Host}/index.html", true);
-                        }
-                        else
-                        {
-                            await next.Invoke();
-                        }
+                        //The controller is backed by auth, get auth middleware to kick in
+                        await next.Invoke();
                     }
-                });
-            }
-            else
-            {
-                app.Use(async (context, next) =>
+                }
+                else
                 {
-                    await next();
-                    if (context.Response.StatusCode == 404 &&
-                        !Path.HasExtension(context.Request.Path.Value) &&
-                        !context.Request.Path.Value.StartsWith("/api/"))
+                    if (context.Request.Path.ToString().Contains("signin"))
                     {
-                        context.Request.Path = "/index.html";
-                        await next();
+                        context.Response.Redirect($"https://{context.Request.Host}/index.html", true);
                     }
-                });
-            }
+                    else
+                    {
+                        await next();
+                        if (context.Response.StatusCode == 404 && !Path.HasExtension(context.Request.Path.Value) && !context.Request.Path.Value.StartsWith("/api/"))
+                        {
+                            context.Request.Path = "/index.html";
+                            await next();
+                        }
+                    }
+                }
+            });
 
             app.UseDefaultFiles();
             app.UseStaticFiles();

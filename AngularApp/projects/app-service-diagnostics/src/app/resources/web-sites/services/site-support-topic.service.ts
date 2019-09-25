@@ -6,14 +6,16 @@ import { ResourceService } from '../../../shared-v2/services/resource.service';
 import { Observable, of } from 'rxjs';
 import { OperatingSystem } from '../../../shared/models/site';
 import { VersioningHelper } from '../../../shared/utilities/versioningHelper';
+import { Http } from '@angular/http';
+import {AuthService} from '../../../startup/services/auth.service';
 
 @Injectable()
 export class SiteSupportTopicService extends SupportTopicService {
 
   private _hardCodedSupportTopicIdMapping = [];
 
-  constructor(protected _diagnosticService: DiagnosticService, protected _webSiteService: WebSitesService) {
-    super(_diagnosticService, _webSiteService);
+  constructor(protected _http: Http, protected _authService: AuthService, protected _diagnosticService: DiagnosticService, protected _webSiteService: WebSitesService) {
+    super(_http, _authService, _diagnosticService, _webSiteService);
 
     if (!VersioningHelper.isV2Subscription(_webSiteService.subscriptionId)) {
 
@@ -24,7 +26,7 @@ export class SiteSupportTopicService extends SupportTopicService {
     }
   }
 
-  getPathForSupportTopic(supportTopicId: string, pesId: string): Observable<string> {
+  getPathForSupportTopic(supportTopicId: string, pesId: string, searchTerm: string): Observable<string> {
     const matchingMapping = this._hardCodedSupportTopicIdMapping.find(
       supportTopic => supportTopic.supportTopicId === supportTopicId &&
         (!pesId || pesId === '' || supportTopic.pesId === pesId)
@@ -33,7 +35,7 @@ export class SiteSupportTopicService extends SupportTopicService {
     if (matchingMapping && this._webSiteService.platform == OperatingSystem.windows) {
       return of(`/legacy${matchingMapping.path}`);
     } else {
-      return super.getPathForSupportTopic(supportTopicId, pesId);
+      return super.getPathForSupportTopic(supportTopicId, pesId, searchTerm);
     }
   }
 }

@@ -15,6 +15,9 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
   detectorId: string = "";
   analysisId: string = "";
   detectorName: string = "";
+  searchTerm: string = "";
+  showSearchBar: boolean = false;
+  searchBarFocus: boolean = false;
 
   constructor(private _activatedRouteLocal: ActivatedRoute, private _diagnosticServiceLocal: DiagnosticService, _resourceService: ResourceService, _authServiceInstance: AuthService, _telemetryService: TelemetryService,
     _navigator: FeatureNavigationService, private _routerLocal: Router) {
@@ -25,21 +28,47 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
     this._activatedRouteLocal.paramMap.subscribe(params => {
       this.analysisId = params.get('analysisId');
       this.detectorId = params.get('detectorName') === null ? "" : params.get('detectorName');
-
-      this._diagnosticServiceLocal.getDetectors().subscribe(detectorList => {
-        if (detectorList) {
-
-          if (this.detectorId !== "") {
-            let currentDetector = detectorList.find(detector => detector.id == this.detectorId)
-            this.detectorName = currentDetector.name;
-          }
+      this._activatedRouteLocal.queryParamMap.subscribe(qParams => {
+        this.searchTerm = qParams.get('searchTerm') === null ? "" : qParams.get('searchTerm');
+        if (this.analysisId=== "searchResultsAnalysis" && this.searchTerm && this.searchTerm.length>0){
+          this.showSearchBar = true;
         }
+
+        this._diagnosticServiceLocal.getDetectors().subscribe(detectorList => {
+          if (detectorList) {
+
+            if (this.detectorId !== "") {
+              let currentDetector = detectorList.find(detector => detector.id == this.detectorId)
+              this.detectorName = currentDetector.name;
+            }
+          }
+        });
       });
     });
   }
 
+  triggerSearch(){
+    if (this.searchTerm && this.searchTerm.length>1) {
+      this.searchBarFocus = false;
+      var searchBar = document.getElementById('caseSubmissionFlowSearchBar');
+      searchBar.blur();
+      this._routerLocal.navigate([`../../${this.analysisId}/search`], { relativeTo: this._activatedRouteLocal, queryParamsHandling: 'merge', queryParams: {searchTerm: this.searchTerm} });
+    }
+  }
+
+  focusSearch(){
+    var searchBar = document.getElementById('caseSubmissionFlowSearchBar');
+    searchBar.focus();
+    this.searchBarFocus = true;
+  }
+
   goBackToAnalysis() {
-    this._routerLocal.navigate([`../../../${this.analysisId}`], { relativeTo: this._activatedRouteLocal, queryParamsHandling: 'merge' });
+    if (this.analysisId=== "searchResultsAnalysis" && this.searchTerm){
+      this._routerLocal.navigate([`../../../../${this.analysisId}/search`], { relativeTo: this._activatedRouteLocal, queryParamsHandling: 'merge', queryParams: {searchTerm: this.searchTerm} });
+    }
+    else{
+      this._routerLocal.navigate([`../../../${this.analysisId}`], { relativeTo: this._activatedRouteLocal, queryParamsHandling: 'merge' });
+    }
   }
 
 }

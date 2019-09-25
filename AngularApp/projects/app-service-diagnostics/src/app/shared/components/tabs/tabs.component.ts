@@ -43,12 +43,15 @@ export class TabsComponent implements OnInit {
         if (analysisTab) {
           existingTab = analysisTab;
         }
+        var allParams = {}
+        Object.keys(currentRoute.snapshot.params).forEach(key => allParams[key] = currentRoute.snapshot.params[key]);
+        Object.keys(currentRoute.snapshot.queryParams).forEach(key => allParams[key] = currentRoute.snapshot.queryParams[key]);
 
         if (!existingTab) {
           existingTab = {
             title: navigationTitle,
             url: url,
-            params: currentRoute.snapshot.params,
+            params: allParams,
             isActive: false
           };
 

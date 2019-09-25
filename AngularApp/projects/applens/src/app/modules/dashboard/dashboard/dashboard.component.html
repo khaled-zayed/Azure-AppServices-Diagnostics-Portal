@@ -6,7 +6,7 @@
         <span class="app-title">App</span>Lens
       </span>
     </a>
-    <ul class="nav navbar-nav navbar-right">
+    <ul *ngIf="showUserInformation" class="nav navbar-nav navbar-right">
       <li class="user-label">
         <span *ngIf="userName">Hello, {{userName}}</span>
       </li>

@@ -38,7 +38,7 @@ export class DetectorContainerComponent implements OnInit {
     });
 
     this.detectorSubject.subscribe(detector => {
-      if (detector) {
+      if (detector && detector !== "searchResultsAnalysis") {
         this.detectorName = detector;
         this.refresh();
       }

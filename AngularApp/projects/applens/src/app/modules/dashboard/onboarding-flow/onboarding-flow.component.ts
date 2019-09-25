@@ -14,6 +14,7 @@ import { ApplensDiagnosticService } from '../services/applens-diagnostic.service
 import { RecommendedUtterance } from '../../../../../../diagnostic-data/src/public_api';
 import { TelemetryService } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.service';
 import {TelemetryEventNames} from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.common';
+import { environment } from '../../../../environments/environment';
 
 const moment = momentNs;
 
@@ -116,7 +117,7 @@ export class OnboardingFlowComponent implements OnInit {
     this.modalPublishingButtonDisabled = false;
     this.showAlert = false;
 
-    this.userName = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
+    this.userName = Object.keys(this._adalService.userInfo.profile).length > 0 ? this._adalService.userInfo.profile.upn : '';
     this.emailRecipients = this.userName.replace('@microsoft.com', '');
   }
 

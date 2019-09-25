@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AppLensV3.Helpers;
 using AppLensV3.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -49,9 +50,9 @@ namespace AppLensV3.Controllers
             var scriptBody = string.Empty;
             var resourceId = string.Empty;
 
-            if (Request.Headers.ContainsKey("x-ms-path-query"))
+            if (Request.Headers.ContainsKey(HeaderConstants.PathQueryHeader))
             {
-                resourceId = Request.Headers["x-ms-path-query"];
+                resourceId = Request.Headers[HeaderConstants.PathQueryHeader];
             }
 
             if (body == null || body["baseUrl"] == null)

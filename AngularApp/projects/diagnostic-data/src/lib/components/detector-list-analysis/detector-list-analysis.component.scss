@@ -24,6 +24,7 @@
     position: relative;
     float: left;
     margin-right: 20px;
+    margin-top: 0px;
     height: 30px;
     width: 30px;
     line-height: 30px;
@@ -46,6 +47,11 @@
 
 .stepper-circle-brown {
     background-color: #ff9104;
+    z-index: 1;
+}
+
+.stepper-circle-dark-blue {
+    background-color: #45a4ec;
     z-index: 1;
 }
 
@@ -112,6 +118,11 @@
     color: black;
     font-size: 20px;
     font-weight: lighter;
+  }
+
+.preloading-icon{
+    margin-left: 30px;
+    color:rgba(0,0,0,0.2);
   }
 
 .special .list-group-item:first-child {

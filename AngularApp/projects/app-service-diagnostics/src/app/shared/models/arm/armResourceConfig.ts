@@ -23,6 +23,12 @@ export class HomePageText {
 	searchBarPlaceHolder: string;
 }
 
+export enum ResourceDescriptorGroups {
+	subscription = 1,
+	resourceGroup = 3,
+	provider = 4,
+	resource = 5
+}
 export class ResourceDescriptor {
 	constructor() {
 		this.subscription = '';
@@ -32,6 +38,7 @@ export class ResourceDescriptor {
 		this.resource = '';
 		this.types = [];
 		this.resources = [];
+		this.resourceUriRegExp = new RegExp('/subscriptions/([^/]+)/(resourceGroups/([^/]+)/)?providers/([^/]+)/(.+)', "i");
 	}
 	subscription: string;
 	resourceGroup: string;
@@ -40,4 +47,5 @@ export class ResourceDescriptor {
 	resource: string;
 	types: Array<string>;
 	resources: Array<string>;
+	resourceUriRegExp:RegExp;
 }

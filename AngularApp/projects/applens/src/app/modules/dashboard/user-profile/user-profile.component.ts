@@ -34,7 +34,7 @@ export class UserProfileComponent implements OnInit {
     this._activatedRoute.params.subscribe(params => {
       this.userId = params['userId'];
       this.detectors = [];
-      let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
+      let alias = Object.keys(this._adalService.userInfo.profile).length > 0 ? this._adalService.userInfo.profile.upn : '';
       let currentUser = alias.replace('@microsoft.com', '');
       this.isCurrentUser = currentUser.toLowerCase() === this.userId;
 

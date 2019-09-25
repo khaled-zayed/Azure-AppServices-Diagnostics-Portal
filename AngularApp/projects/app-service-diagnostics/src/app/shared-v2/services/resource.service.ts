@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { ArmResource } from '../models/arm';
 import { ArmService } from '../../shared/services/arm.service';
-import { ArmResourceConfig, ResourceDescriptor } from '../../shared/models/arm/armResourceConfig';
+import { ArmResourceConfig, ResourceDescriptor, ResourceDescriptorGroups } from '../../shared/models/arm/armResourceConfig';
 import { GenericArmConfigService } from '../../shared/services/generic-arm-config.service';
 
 @Injectable()
@@ -35,6 +35,10 @@ export class ResourceService {
     else {
       return null;
     }
+  }
+
+  public getPesId(): Observable<string>{
+    return Observable.of(null);
   }
 
   public get searchSuffix(): string {
@@ -118,34 +122,33 @@ export class ResourceService {
       if (!resourceUri.startsWith('/')) {
         resourceUri = '/' + resourceUri;
       }
-      const resourceUriRegEx: RegExp = new RegExp('/subscriptions/(?<subscriptionId>[^/]+)/(resourceGroups/(?<resourceGroup>[^/]+)/)?providers/(?<provider>[^/]+)/(?<resource>.+)', "i");
-      var result = resourceUri.match(resourceUriRegEx);
+      
+      var result = resourceUri.match(resourceDesc.resourceUriRegExp);
       if (result && result.length > 0) {
-        const groups = result['groups'];
 
-        if (groups['subscriptionId']) {
-          resourceDesc.subscription = groups['subscriptionId'];
+        if (result[ResourceDescriptorGroups.subscription]) {
+          resourceDesc.subscription = result[ResourceDescriptorGroups.subscription];
         }
         else {
           resourceDesc.subscription = '';
         }
 
-        if (groups['resourceGroup']) {
-          resourceDesc.resourceGroup = groups['resourceGroup'];
+        if (result[ResourceDescriptorGroups.resourceGroup]) {
+          resourceDesc.resourceGroup = result[ResourceDescriptorGroups.resourceGroup];
         }
         else {
           resourceDesc.resourceGroup = '';
         }
 
-        if (groups['provider']) {
-          resourceDesc.provider = groups['provider'];
+        if (result[ResourceDescriptorGroups.provider]) {
+          resourceDesc.provider = result[ResourceDescriptorGroups.provider];
         }
         else {
           resourceDesc.provider = '';
         }
 
-        if (groups['resource']) {
-          const resourceParts = groups['resource'].split('/');
+        if (result[ResourceDescriptorGroups.resource]) {
+          const resourceParts = result[ResourceDescriptorGroups.resource].split('/');
           if (resourceParts.length % 2 != 0) {
             //ARM URI is incorrect. The resource section contains an uneven number of parts
             resourceDesc.resource = '';

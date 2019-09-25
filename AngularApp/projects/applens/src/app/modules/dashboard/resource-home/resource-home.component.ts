@@ -118,7 +118,7 @@ export class ResourceHomeComponent implements OnInit {
 
 
             });
-            let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
+            let alias = Object.keys(this._adalService.userInfo.profile).length > 0 ? this._adalService.userInfo.profile.upn : '';
             let userId = alias.replace('@microsoft.com', '').toLowerCase();
             this._telemetryService.logPageView(TelemetryEventNames.HomePageLoaded, {"numCategories": this.categories.length.toString(), "userId": userId});
 

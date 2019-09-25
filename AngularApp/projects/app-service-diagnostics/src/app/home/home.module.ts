@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { SharedModule } from '../shared/shared.module';
 import { RouterModule } from '@angular/router';
 import { SharedV2Module } from '../shared-v2/shared-v2.module';
+import { GenericSupportTopicService} from 'diagnostic-data';
 import { HomeComponent } from './components/home/home.component';
 import { CategoryChatComponent } from './components/category-chat/category-chat.component';
 import { CategoryTileComponent } from './components/category-tile/category-tile.component';
@@ -18,6 +19,7 @@ import { ContentService } from '../shared-v2/services/content.service';
 import { DiagnosticDataModule } from 'diagnostic-data';
 import { GenericAnalysisComponent } from '../shared/components/generic-analysis/generic-analysis.component';
 import { DiagnosticsSettingsComponent } from './components/diagnostics-settings/diagnostics-settings.component';
+import { SupportTopicService } from '../shared-v2/services/support-topic.service';
 
 export const HomeRoutes = RouterModule.forChild([
   {
@@ -93,6 +95,48 @@ export const HomeRoutes = RouterModule.forChild([
     }
   },
   {
+    path: 'analysis/:analysisId/search',
+    component: GenericAnalysisComponent,
+    data: {
+      cacheComponent: true
+    },
+    children: [
+      {
+        path: '',
+        component: GenericDetectorComponent,
+        data: {
+          analysisMode: true,
+          cacheComponent: true
+        }
+      }
+    ],
+    resolve: {
+      time: TimeControlResolver,
+      navigationTitle: TabTitleResolver,
+    }
+  },
+  {
+    path: 'analysis/:analysisId/search/detectors/:detectorName',
+    component: GenericAnalysisComponent,
+    data: {
+      cacheComponent: true
+    },
+    children: [
+      {
+        path: '',
+        component: GenericDetectorComponent,
+        data: {
+          analysisMode: true,
+          cacheComponent: true
+        }
+      }
+    ],
+    resolve: {
+      time: TimeControlResolver,
+      navigationTitle: TabTitleResolver,
+    }
+  },
+  {
     path: 'analysis/:analysisId/detectors',
     component: GenericAnalysisComponent,
     data: {
@@ -136,6 +180,8 @@ export const HomeRoutes = RouterModule.forChild([
     FormsModule
   ],
   declarations: [HomeComponent, CategoryChatComponent, CategoryTileComponent, SearchResultsComponent, SupportTopicRedirectComponent, DiagnosticsSettingsComponent],
-  providers: [CategoryTabResolver, CategoryChatResolver, TimeControlResolver]
+  providers: [CategoryTabResolver, CategoryChatResolver, TimeControlResolver,
+    { provide: GenericSupportTopicService, useExisting: SupportTopicService}
+  ]
 })
 export class HomeModule { }

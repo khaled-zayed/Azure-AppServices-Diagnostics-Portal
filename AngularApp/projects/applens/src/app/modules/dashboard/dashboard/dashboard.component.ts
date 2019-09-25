@@ -35,6 +35,7 @@ export class DashboardComponent implements OnDestroy {
   resource: any;
   keys: string[];
   observerLink: string="";
+  showUserInformation: boolean;
 
   constructor(public resourceService: ResourceService, private _detectorControlService: DetectorControlService,
     private _router: Router, private _activatedRoute: ActivatedRoute, private _navigator: FeatureNavigationService,
@@ -75,7 +76,7 @@ export class DashboardComponent implements OnDestroy {
       this._router.navigate([], { queryParams: routeParams, relativeTo: this._activatedRoute });
     }
 
-    if(environment.adal.enabled){
+    if((this.showUserInformation = environment.adal.enabled)){
       let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
       this.userId = alias.replace('@microsoft.com', '');
       this._diagnosticService.getUserPhoto(this.userId).subscribe(image => {

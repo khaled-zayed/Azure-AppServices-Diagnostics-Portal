@@ -1,4 +1,12 @@
-<detector-container [detector]="analysisDetector" [isAnalysisView]="true"></detector-container>
+<detector-container *ngIf="!showSearchBar" [detector]="analysisDetector" [isAnalysisView]="true"></detector-container>
+<div *ngIf="showSearchBar" class="search-box">
+    <span>Diagnostics based on </span>
+    <div class="search-input-box">
+      <input id="caseSubmissionFlowSearchBar" placeholder="Describe your problem and hit enter" (click)="focusSearch()" class="search-input" [(ngModel)]="searchTerm" (keyup.enter)="triggerSearch()" [style.backgroundColor]="searchBarFocus? 'transparent': ''" maxlength="140">
+      <i class="fa fa-search search-icon" (click)="focusSearch()"></i>
+      <i class="fa fa-exclamation icon-err" [style.display]="searchTerm?.trim().length>0 && searchTerm?.trim().length<2? '': 'none'" title="At least 2 characters"></i>
+    </div>
+</div>
 <detector-list-analysis withinDiagnoseAndSolve="true" detectorParmName="detectorName"></detector-list-analysis>
 
 <div [hidden]="detectorId === ''">
