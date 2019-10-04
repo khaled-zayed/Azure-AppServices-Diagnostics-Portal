@@ -169,7 +169,7 @@ namespace AppLensV3.Authorization
             var requestUrl = string.Format(graphUrl, userId);
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, requestUrl);
             Dictionary<string, Array> requestParams = new Dictionary<string, Array>();
-            string[] groupIds = { securityGroupObjectId };
+            string[] groupIds = securityGroupObjectId.Split(",");
             requestParams.Add("groupIds", groupIds);
             string authorizationToken = await AuthorizationTokenService.Instance.GetAuthorizationTokenAsync();
             request.Headers.Add("Authorization", authorizationToken);
@@ -179,7 +179,7 @@ namespace AppLensV3.Authorization
             var res = await responseMsg.Content.ReadAsStringAsync();
             dynamic groupIdsResponse = JsonConvert.DeserializeObject(res);
             string[] groupIdsReturned = groupIdsResponse.value.ToObject<string[]>();
-            if (groupIdsReturned.Contains(securityGroupObjectId))
+            if (groupIdsReturned.Length>0)
             {
                 return true;
             }
