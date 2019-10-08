@@ -115,6 +115,26 @@
             "azureCommImpactedServicesList": "registries",
             "pesId": "16533",
             "staticSelfHelpContent": ""
+        },
+		{
+            "service": "ResourceService",
+            "resourceType": "Microsoft.ContainerRegistry/registries",
+            "templateFileName": "ContainerRegistry",
+            "imgSrc": "assets/img/acr-logo.png",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "registries",
+            "pesId": "16533",
+            "staticSelfHelpContent": ""
+        },
+		{
+            "service": "ResourceService",
+            "resourceType": "Microsoft.Automation/automationAccounts",",
+            "templateFileName": "AzureAutomation",
+            "imgSrc": "assets/img/AAlogo.png",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "",
+            "pesId": "15607",
+            "staticSelfHelpContent": ""
         }
     ]
 }
