@@ -118,11 +118,11 @@
         },
 		{
             "service": "ResourceService",
-            "resourceType": "Microsoft.Automation/automationAccounts",",
+            "resourceType": "Microsoft.Automation/automationAccounts",
             "templateFileName": "AzureAutomation",
             "imgSrc": "assets/img/AAlogo.png",
             "versionPrefix": "",
-            "azureCommImpactedServicesList": "",
+            "azureCommImpactedServicesList": "AzureAutomation",
             "pesId": "15607",
             "staticSelfHelpContent": ""
         }
