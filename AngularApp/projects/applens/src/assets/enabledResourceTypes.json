@@ -125,6 +125,16 @@
             "azureCommImpactedServicesList": "AzureAutomation",
             "pesId": "15607",
             "staticSelfHelpContent": ""
+        },
+		{
+            "service": "ResourceService",
+            "resourceType": "Microsoft.MachineLearningServices/operations",
+            "templateFileName": "MachineLearningServices",
+            "imgSrc": "assets/img/MLlogo.jpg",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "MachineLearningServices",
+            "pesId": "",
+            "staticSelfHelpContent": ""
         }
     ]
 }
