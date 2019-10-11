@@ -128,7 +128,7 @@
         },
 		{
             "service": "ResourceService",
-            "resourceType": "Microsoft.MachineLearningServices/operations",
+            "resourceType": "Microsoft.MachineLearningServices/workspaces",
             "templateFileName": "MachineLearningServices",
             "imgSrc": "assets/img/MLlogo.jpg",
             "versionPrefix": "",

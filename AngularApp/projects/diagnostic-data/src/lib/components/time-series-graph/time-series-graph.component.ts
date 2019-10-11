@@ -89,10 +89,10 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
 
         const timestamp = moment.utc(row[timestampColumn]);
 
-        if (!this.customizeXAxis && timestamp.isAfter(lastTimeStamp)) {
+        if (!this.customizeXAxis) {
           const currentGcf = this._getGreatestCommonFactor(timestamp);
           if (currentGcf.asMilliseconds() < this.timeGrain.asMilliseconds()) {
-            this.timeGrain = currentGcf;
+            this.timeGrain = currentGcf.clone();
           }
         }
 
@@ -130,6 +130,7 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
       if (!this.customizeXAxis) {
         let pointToAdd = pointsForThisSeries.pop();
 
+        // Remove the points that earlier than starttime
         while  (pointToAdd && pointToAdd.timestamp && pointToAdd.timestamp.isBefore(this.startTime)) {
           pointToAdd =  pointsForThisSeries.pop();
         }
@@ -156,10 +157,10 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
   }
 
   private _getGreatestCommonFactor(timestamp: momentNs.Moment): momentNs.Duration {
-    const minuteGcf = this._gcd(timestamp.minutes(), 60);
+    const minuteGcf = this._gcd(timestamp.minutes(), this.timeGrain.asMinutes());
     if (minuteGcf !== 60) { return moment.duration(minuteGcf, 'minutes'); }
 
-    const hourGcf = this._gcd(timestamp.hours(), 24);
+    const hourGcf = this._gcd(timestamp.hours(), this.timeGrain.asHours());
     if (hourGcf !== 24) { return moment.duration(hourGcf, 'hours'); }
 
     const daysInMonth = timestamp.daysInMonth();
@@ -173,8 +174,8 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
   private _gcd(a: number, b: number) {
     a = Math.abs(a);
     b = Math.abs(b);
-    if (b > a) {const temp = a; a = b; b = temp; }
     while (true) {
+        if (b > a) {const temp = a; a = b; b = temp; }
         if (b === 0) { return a; }
         a %= b;
         if (a === 0) { return b; }
@@ -198,11 +199,11 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
 
     // 1 days -> 7 days
     if (rangeInHours > 24) {
-      return moment.duration(1, 'days');
+      return moment.duration(24, 'hours');
     }
 
     // else 1 hr
-    return moment.duration(1, 'hours');
+    return moment.duration(60, 'minutes');
   }
 
   // No data time grain: The default in the case of one or no data points

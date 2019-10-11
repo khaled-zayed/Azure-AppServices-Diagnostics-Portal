@@ -66,7 +66,7 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
 
 
   sliderOptionsMaxDuration: Options = {
-    floor: 1, ceil: 168, showTicks: true, step: 1, logScale: true,
+    floor: 1, ceil: 720, showTicks: true, step: 1, logScale: true,
     translate: (value: number): string => {
       let label = (value === 1) ? ' hour' : ' hours';
       let displayValue = value.toString();
